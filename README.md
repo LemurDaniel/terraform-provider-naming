@@ -1,10 +1,41 @@
 # Terraform Naming Schema Module
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Terraform Registry](https://img.shields.io/badge/registry-naming--schema%2Frandom-blue)](https://registry.terraform.io/modules/LemurDaniel/naming-schema/random/latest)
 
 A schema-driven approach to consistent resource naming in Terraform. Define your naming conventions once in YAML — patterns, abbreviations, mappings, and settings — and consume the resolved schema from any module or provider.
 
-This module loads and merges a naming convention (a bundled one, or your own YAML) with a set of runtime parameters, and outputs a single resolved schema object that other modules can build resource names from.
+This module loads and merges a naming convention (a bundled one, or your own YAML) with a set of runtime parameters, and outputs a single resolved schema object that other modules can build resource names from. It only resolves the *schema* — to actually render resource names from it, pair it with the [`LemurDaniel/naming/random`](https://registry.terraform.io/modules/LemurDaniel/naming/random/latest) module, as shown below.
+
+## 🚀 Quick Start
+
+```hcl
+module "schema" {
+  source  = "LemurDaniel/naming-schema/random"
+  version = "~> 1.0"
+
+  parameters = {
+    location    = "westeurope"
+    environment = "development"
+    name        = "myapp"
+  }
+}
+
+module "storage_account_naming" {
+  source  = "LemurDaniel/naming/random"
+  version = "~> 1.0"
+
+  schema   = module.schema
+  resource = "Azure::Microsoft.Storage/storageAccounts"
+}
+
+output "storage_account_name" {
+  value = module.storage_account_naming.name  # "stwedevmyapp01"
+}
+```
+
+> [!NOTE]
+> This module ([`LemurDaniel/naming-schema/random`](https://registry.terraform.io/modules/LemurDaniel/naming-schema/random/latest)) only produces the resolved schema object. Generating an actual name — like `storage_account_name` above — requires the companion [`LemurDaniel/naming/random`](https://registry.terraform.io/modules/LemurDaniel/naming/random/latest) module, which consumes that schema.
 
 ## 🙏 Acknowledgments
 
@@ -21,7 +52,7 @@ This module loads and merges a naming convention (a bundled one, or your own YAM
 - **YAML-driven** — swap the entire schema between environments without changing any resource code.
 - **Partial overrides** — supply only the keys you want to change; everything else falls back to the base convention.
 
-## 🚀 Quick Start
+## 📦 Using the Schema Module on Its Own
 
 Reference the module from the Terraform Registry, pinning a version:
 
