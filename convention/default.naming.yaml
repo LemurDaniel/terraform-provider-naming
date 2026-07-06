@@ -1,0 +1,514 @@
+#
+# ################################################################################################
+# ## (Optional) Define default parameters.
+
+default_parameters:
+
+#
+# ################################################################################################
+# ## Define general settings.
+
+index_modifier: 1
+
+enforce_lower_case:
+  default: true
+
+  azurerm:
+    default: false
+    container_registry: true
+    storage_account: true
+    key_vault: true
+    dns_zone: true
+    private_dns_zone: true
+
+#
+# ################################################################################################
+# ## Define the patterns for generating names.
+
+patterns:
+  default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME>-<INDEX;%02s>-<UNIQUE_ID_4>"
+
+  # AzureAD resources have no location — pattern omits <LOCATION>.
+  AzureAD:
+    default: "<TYPE>-<ENVIRONMENT>-<NAME>-<INDEX;%02s>"
+
+  Azure:
+    default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?SUBNAME;-%s>-<INDEX;%02s>"
+
+    # ----- Compute / Web ---------------------------------------------------
+    # Windows VM names are limited to 15 characters - keep the pattern tight.
+    Microsoft.Compute/virtualMachines:
+      default: "<TYPE><ENVIRONMENT><NAME><INDEX;%02s>"
+      # <name_id>: "<pattern>"
+      # <name_kind>: "<pattern>"
+      
+    # ----- Containers ------------------------------------------------------
+    # Container Registry: 5-50 chars, alphanumeric only (no hyphens).
+    Microsoft.ContainerRegistry/registries:
+      default: "<TYPE><LOCATION><ENVIRONMENT><NAME><INDEX;%02s>"
+
+    # ----- Management / Governance -----------------------------------------
+    Microsoft.Resources/resourceGroups:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME>-<INDEX;%02s>"
+
+    # ----- Networking ------------------------------------------------------
+    Microsoft.Network/virtualNetworks:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME>-<INDEX;%02s>"
+
+    Microsoft.Network/virtualNetworks/subnets:
+      default: "<TYPE>-<ENVIRONMENT>-<NAME>-<INDEX;%02s>"
+
+    Microsoft.Network/publicIPAddresses:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME>-<INDEX;%02s>"
+
+    Microsoft.Network/networkSecurityGroups:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME>-<INDEX;%02s>"
+
+    # ----- Security --------------------------------------------------------
+    # Key Vault: 3-24 chars, must start with letter, alphanumeric + hyphens.
+    Microsoft.KeyVault/vaults:
+      default: "<TYPE>-<ENVIRONMENT>-<NAME>-<UNIQUE_ID_4>"
+
+    # ----- Storage ---------------------------------------------------------
+    # Storage account: 3-24 chars, alphanumeric only (no hyphens), lowercase.
+    Microsoft.Storage/storageAccounts:
+      default: "<TYPE><LOCATION><ENVIRONMENT><NAME><INDEX;%02s>"
+      vm_pattern: "<TYPE><LOCATION><ENVIRONMENT><NAME><INDEX;%02s>"
+      # <name_id>: "<pattern>"
+      # <name_kind>: "<pattern>"
+
+#
+# ################################################################################################
+# ## Define any mappings for the schema.
+
+mappings:
+  # Map location names to their corresponding shortnames.
+  # Codes follow the Azure Verified Modules geo_code convention
+  # (Azure/terraform-azurerm-avm-utl-regions, locals.geo.codes.tf.json).
+  location:
+    global: glb
+
+    # Europe
+    westeurope: we
+    West Europe: we
+
+    northeurope: ne
+    North Europe: ne
+
+    germanynorth: gn
+    Germany North: gn
+
+    germanywestcentral: gwc
+    Germany West Central: gwc
+
+    francecentral: frc
+    France Central: frc
+
+    francesouth: frs
+    France South: frs
+
+    switzerlandnorth: szn
+    Switzerland North: szn
+
+    switzerlandwest: szw
+    Switzerland West: szw
+
+    norwayeast: nwe
+    Norway East: nwe
+
+    norwaywest: nww
+    Norway West: nww
+
+    swedencentral: sdc
+    Sweden Central: sdc
+
+    polandcentral: plc
+    Poland Central: plc
+
+    italynorth: itn
+    Italy North: itn
+
+    spaincentral: spc
+    Spain Central: spc
+
+    # United Kingdom
+    uksouth: uks
+    UK South: uks
+
+    ukwest: ukw
+    UK West: ukw
+
+    # North America
+    eastus: eus
+    East US: eus
+
+    eastus2: eus2
+    East US 2: eus2
+
+    westus: wus
+    West US: wus
+
+    westus2: wus2
+    West US 2: wus2
+
+    westus3: wus3
+    West US 3: wus3
+
+    centralus: cus
+    Central US: cus
+
+    canadacentral: cnc
+    Canada Central: cnc
+
+    canadaeast: cne
+    Canada East: cne
+
+    # Asia / Pacific
+    eastasia: ea
+    East Asia: ea
+
+    southeastasia: sea
+    Southeast Asia: sea
+
+    japaneast: jpe
+    Japan East: jpe
+
+    japanwest: jpw
+    Japan West: jpw
+
+    australiaeast: ae
+    Australia East: ae
+
+    australiasoutheast: ase
+    Australia Southeast: ase
+
+  # Use shortened environment names.
+  environment:
+    development: dev
+    staging: stg
+    test: tst
+    production: prod
+    integration: int
+    sandbox: sbx
+    preproduction: preprod
+    pre-production: preprod
+    uat: uat
+    qa: qa
+    demo: demo
+    hotfix: hf
+
+
+
+#
+# ################################################################################################
+# ## This data is generated from: https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/azure-best-practices/resource-abbreviations
+abbreviations:
+  Azure:
+
+    #/////////////////////////////////////////////////////////////////////////
+    #//// AI + machine learning
+    Microsoft.CognitiveServices/accounts::CognitiveServices: ais
+    Microsoft.CognitiveServices/accounts::AIServices: aif
+    Microsoft.CognitiveServices/accounts/projects::default: proj
+    Microsoft.CognitiveServices/accounts::ComputerVision: cv
+    Microsoft.CognitiveServices/accounts::ContentModerator: cm
+    Microsoft.CognitiveServices/accounts::ContentSafety: cs
+    Microsoft.CognitiveServices/accounts::CustomVision.Prediction: cstv
+    Microsoft.CognitiveServices/accounts::CustomVision.Training: cstvt
+    Microsoft.CognitiveServices/accounts::FormRecognizer: di
+    Microsoft.CognitiveServices/accounts::Face: face
+    Microsoft.CognitiveServices/accounts::HealthInsights: hi
+    Microsoft.CognitiveServices/accounts::ImmersiveReader: ir
+    Microsoft.CognitiveServices/accounts::TextAnalytics: lang
+    Microsoft.CognitiveServices/accounts::SpeechServices: spch
+    Microsoft.CognitiveServices/accounts::TextTranslation: trsl
+
+    Microsoft.MachineLearningServices/workspaces::Hub: hub
+    Microsoft.MachineLearningServices/workspaces::Project: proj
+    Microsoft.MachineLearningServices/workspaces::default: mlw
+    Microsoft.CognitiveServices/accounts::OpenAI: oai
+    Microsoft.BotService/botServices::azurebot: bot
+    Microsoft.VideoIndexer/accounts::default: avi
+
+    Microsoft.Search/searchServices::default: srch
+
+    #/////////////////////////////////////////////////////////////////////////
+    #//// Analytics and IoT
+    Microsoft.Fabric/capacities::default: fc
+    Microsoft.AnalysisServices/servers::default: as
+    Microsoft.DataFactory/factories::default: adf
+    Microsoft.DataLakeStore/accounts::default: dls
+    Microsoft.DigitalTwins/digitalTwinsInstances::default: dt
+    Microsoft.StreamAnalytics/cluster::default: asa
+    Microsoft.PowerBIDedicated/capacities::default: pbi
+    Microsoft.TimeSeriesInsights/environments::default: tsi
+
+    Microsoft.Databricks/workspaces/accessConnectors::default: dbac
+    Microsoft.Databricks/workspaces::default: dbw
+
+    Microsoft.Kusto/clusters::default: dec
+    Microsoft.Kusto/clusters/databases::default: dedb
+
+    Microsoft.Devices/IotHubs::default: iot
+    Microsoft.Devices/provisioningServices::default: provs
+    Microsoft.Devices/provisioningServices/certificates::default: pcert
+
+    Microsoft.Synapse/privateLinkHubs::default: synplh
+    Microsoft.Synapse/workspaces/sqlPools::default: syndp
+    Microsoft.Synapse/workspaces/bigDataPools::default: synsp
+    Microsoft.Synapse/workspaces::default: synw
+
+    Microsoft.EventHub/namespaces::default: evhns
+    Microsoft.EventHub/namespaces/eventHubs::default: evh
+    Microsoft.EventGrid/domains::default: evgd
+    Microsoft.EventGrid/namespaces::default: evgns
+    Microsoft.EventGrid/eventSubscriptions::default: evgs
+    Microsoft.EventGrid/domains/topics::default: evgt
+    Microsoft.EventGrid/systemTopics::default: egst
+
+    # HDInsight/clusters::default: hadoop
+    # HDInsight/clusters::default: hbase
+    # HDInsight/clusters::default: kafka
+    # HDInsight/clusters::default: spark
+    # HDInsight/clusters::default: storm
+    # HDInsight/clusters::default: mls
+
+
+    #/////////////////////////////////////////////////////////////////////////
+    #//// Compute and web
+    Microsoft.Communication/communicationServices::default: acs
+    Microsoft.LoadTestService/loadTests::default: lt
+    Microsoft.Kubernetes/connectedClusters::default: arck
+    Microsoft.Batch/batchAccounts::default: ba
+    Microsoft.VirtualMachineImages/imageTemplates::default: it
+
+    Microsoft.NotificationHubs/namespaces/notificationHubs::default: ntf
+    Microsoft.NotificationHubs/namespaces::default: ntfns
+
+    Microsoft.Maintenance/maintenanceConfigurations::default: mc
+
+    Microsoft.Web/hostingEnvironments::default: ase
+    Microsoft.Web/hostingEnvironments::host: host
+
+    Microsoft.Web/serverFarms::default: plan
+    Microsoft.Web/sites::default: app
+    Microsoft.Web/sites::app: app
+    Microsoft.Web/sites::function: func
+    Microsoft.Web/staticSites::default: stapp
+
+    Microsoft.HybridCompute/machines::default: arcs
+    Microsoft.HybridCompute/privateLinkScopes::default: pls
+    Microsoft.HybridCompute/gateways::default: arcgw
+
+    Microsoft.Compute/availabilitySets::default: avail
+    Microsoft.Compute/cloudServices::default: cld
+    Microsoft.Compute/diskEncryptionSets::default: des
+    Microsoft.Compute/galleries::default: gal
+    Microsoft.Compute/disks::default: disk
+    Microsoft.Compute/disks::data: disk
+    Microsoft.Compute/disks::os: osdisk
+    Microsoft.Compute/proximityPlacementGroups::default: ppg
+    Microsoft.Compute/restorePointCollections::default: rpc
+    Microsoft.Compute/snapshots::default: snap
+    Microsoft.Compute/virtualMachines::default: vm
+    Microsoft.Compute/virtualMachineScaleSets::default: vmss
+
+
+    #/////////////////////////////////////////////////////////////////////////
+    #//// Containers
+    Microsoft.ContainerService/managedClusters::default: aks
+    Microsoft.ContainerService/managedClusters/agentPools::default: np
+    Microsoft.ContainerService/managedClusters/agentPools::system: npsystem
+
+    Microsoft.App/jobs::default: caj
+    Microsoft.App/containerApps::default: ca
+    Microsoft.App/managedEnvironments::default: cae
+
+    Microsoft.ContainerRegistry/registries::default: cr
+    Microsoft.ContainerInstance/containerGroups::default: ci
+
+    Microsoft.ServiceFabric/clusters::default: sf
+    Microsoft.ServiceFabric/managedClusters::default: sfmc
+
+    #/////////////////////////////////////////////////////////////////////////
+    #//// Databases
+    Microsoft.Cache/Redis::default: redis
+    Microsoft.Cache/RedisEnterprise::default: amr
+
+    Microsoft.DBforPostgreSQL/serverGroupsv2::default: cospos
+    Microsoft.DBforMySQL/servers::default: mysql
+    Microsoft.DBforPostgreSQL/servers::default: psql
+
+    Microsoft.Sql/managedInstances::default: sqlmi
+    Microsoft.Sql/servers::default: sql
+    Microsoft.Sql/servers/databases::default: sqldb
+    Microsoft.Sql/servers/jobAgents::default: sqlja
+    Microsoft.Sql/servers/elasticpool::default: sqlep
+
+    Microsoft.DocumentDB/databaseAccounts/sqlDatabases::default: cosmos
+    # DocumentDB/databaseAccounts::default: coscas
+    # DocumentDB/databaseAccounts::default: cosmon
+    # DocumentDb/databaseAccounts::default: cosno
+    # DocumentDb/databaseAccounts::default: costab
+    # DocumentDb/databaseAccounts::default: cosgrm
+
+
+    #/////////////////////////////////////////////////////////////////////////
+    #//// Developer tools
+    Microsoft.AppConfiguration/configurationStores::default: appcs
+    Microsoft.Maps/accounts::default: map
+    Microsoft.SignalRService/SignalR::default: sigr
+    Microsoft.SignalRService/webPubSub::default: wps
+
+
+    #/////////////////////////////////////////////////////////////////////////
+    #//// DevOps
+    Microsoft.Dashboard/grafana::default: amg
+    Microsoft.DevOpsInfrastructure/pools::default: mdp
+
+    #/////////////////////////////////////////////////////////////////////////
+    #//// Integration
+    Microsoft.ApiManagement/service::default: apim
+
+    Microsoft.Logic/integrationAccounts::default: ia
+    Microsoft.Logic/workflows::default: logic
+
+    Microsoft.ServiceBus/namespaces::default: sbns
+    Microsoft.ServiceBus/namespaces/queues::default: sbq
+    Microsoft.ServiceBus/namespaces/topics::default: sbt
+    Microsoft.ServiceBus/namespaces/topics/subscriptions::default: sbts
+
+
+    #/////////////////////////////////////////////////////////////////////////
+    #//// Management and governance
+    # Authorization/policyDefinitions::default: <description>
+    Microsoft.Automation/automationAccounts::default: aa
+    Microsoft.AlertsManagement/actionRules::default: apr
+    Microsoft.Management/managementGroups::default: mg
+    Microsoft.Purview/accounts::default: pview
+
+    Microsoft.OperationalInsights/workspaces::default: log
+    Microsoft.OperationalInsights/querypacks::default: pack
+
+    Microsoft.Resources/deploymentScripts::default: script
+    Microsoft.Resources/resourceGroups::default: rg
+    Microsoft.Resources/templateSpecs::default: ts
+
+    Microsoft.Insights/components::default: appi
+    Microsoft.Insights/actionGroups::default: ag
+    Microsoft.Insights/dataCollectionRules::default: dcr
+    Microsoft.Insights/dataCollectionEndpoints::default: dce
+
+
+    #/////////////////////////////////////////////////////////////////////////
+    #//// Migration
+    Microsoft.Migrate/assessmentProjects::default: migr
+    Microsoft.DataMigration/services::default: dms
+    Microsoft.RecoveryServices/vaults::default: rsv
+
+
+    #/////////////////////////////////////////////////////////////////////////
+    #//// Networking
+    Microsoft.Network/applicationGateways::default: agw
+    Microsoft.Network/applicationSecurityGroups::default: asg
+
+    # Cdn/profiles::default: cdnp
+    # Cdn/profiles/endpoints::default: cdne
+
+    Microsoft.Cdn/profiles::default: afd
+    Microsoft.Cdn/profiles/afdEndpoints::default: fde
+    Microsoft.Network/frontdoorWebApplicationFirewallPolicies::default: fdfp
+    Microsoft.Network/frontDoors::default: afd
+
+    Microsoft.Network/ipGroups::default: ipg
+    Microsoft.Network/connections::default: con
+    Microsoft.Network/dnsZones::default: 
+    Microsoft.Network/dnsForwardingRulesets::default: dnsfrs
+    Microsoft.Network/dnsResolvers::default: dnspr
+    Microsoft.Network/dnsResolvers/inboundEndpoints::default: in
+    Microsoft.Network/dnsResolvers/outboundEndpoints::default: out
+    Microsoft.Network/privateDnsZones::default: 
+    Microsoft.Network/azureFirewalls::default: afw
+    Microsoft.Network/firewallPolicies::default: afwp
+    Microsoft.Network/expressRouteCircuits::default: erc
+    Microsoft.Network/expressRoutePorts::default: erd
+    Microsoft.Network/localNetworkGateways::default: lgw
+    Microsoft.Network/natGateways::default: ng
+    Microsoft.Network/networkManagers::default: vnm
+    Microsoft.Network/virtualNetworkGateways::default: vgw
+    Microsoft.Network/virtualNetworkGateways::expressRoute: ergw
+
+    Microsoft.Network/virtualNetworks::default: vnet
+    Microsoft.Network/virtualNetworks/virtualNetworkPeerings::default: peer
+    Microsoft.Network/virtualNetworks/subnets::default: snet
+    Microsoft.Network/virtualWans::default: vwan
+    Microsoft.Network/virtualHubs::default: vhub
+    # Microsoft.Network/virtualHubs::default: rtserv
+
+    Microsoft.Network/loadBalancers::default: lbi
+    Microsoft.Network/loadBalancers::internal: lbi
+    Microsoft.Network/loadBalancers::external: lbe
+    Microsoft.Network/loadBalancers/inboundNatRules::default: rule
+
+    Microsoft.Network/networkInterfaces::default: nic
+    Microsoft.Network/networkSecurityPerimeters::default: nsp
+    Microsoft.Network/networkSecurityGroups::default: nsg
+    Microsoft.Network/networkSecurityGroups/securityRules::default: nsgsr
+    Microsoft.Network/networkWatchers::default: nw
+
+    Microsoft.Network/privateLinkServices::default: pl
+    Microsoft.Network/privateEndpoints::default: pep
+    Microsoft.Network/publicIPAddresses::default: pip
+    Microsoft.Network/publicIPPrefixes::default: ippre
+
+    Microsoft.Network/routeFilters::default: rf
+    Microsoft.Network/routeTables::default: rt
+    Microsoft.Network/routeTables/routes::default: udr
+
+    Microsoft.Network/serviceEndPointPolicies::default: se
+    Microsoft.Network/trafficManagerProfiles::default: traf
+
+
+    #/////////////////////////////////////////////////////////////////////////
+    #//// Security
+    Microsoft.Network/bastionHosts::default: bas
+    Microsoft.KeyVault/vaults::default: kv
+    Microsoft.KeyVault/managedHSMs::default: kvmhsm
+    Microsoft.ManagedIdentity/userAssignedIdentities::default: id
+    Microsoft.Compute/sshPublicKeys::default: sshkey
+    Microsoft.Network/vpnGateways::default: vpng
+    Microsoft.Network/vpnGateways/vpnConnections::default: vcn
+    Microsoft.Network/vpnGateways/vpnSites::default: vst
+
+    # Microsoft.Network/firewallPolicies::default: waf
+    Microsoft.Network/firewallPolicies/ruleGroups::default: wafrg
+
+
+    #/////////////////////////////////////////////////////////////////////////
+    #//// Storage
+    Microsoft.DataProtection/backupVaults::default: bvault
+    Microsoft.DataProtection/backupVaults/backupPolicies::default: bkpol
+    Microsoft.DataProtection/resourceGuards::default: rgd
+    Microsoft.Storage/storageAccounts/fileServices/shares::default: share
+    Microsoft.Storage/storageAccounts::default: st
+    Microsoft.Storage/storageAccounts::vm: stvm
+    Microsoft.StorageSync/storageSyncServices::default: sss
+
+
+    #/////////////////////////////////////////////////////////////////////////
+    #//// Virtual desktop infrastructure
+    Microsoft.DesktopVirtualization/hostPools::default: vdpool
+    Microsoft.DesktopVirtualization/applicationGroups::default: vdag
+    Microsoft.DesktopVirtualization/workspaces::default: vdws
+    Microsoft.DesktopVirtualization/scalingPlans::default: vdscaling
+
+  AzureAD:
+
+    #/////////////////////////////////////////////////////////////////////////
+    #//// Identity
+    Groups::default: grp
+    Groups::security: grp
+    Groups::m365: grpm
+
+    Applications::default: app
+    ServicePrincipals::default: sp

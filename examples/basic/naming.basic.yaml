@@ -1,0 +1,46 @@
+
+# Custom override on top of the "default" convention.
+#
+# NOTE: `patterns` is replaced wholesale when set (no per-key fallback), so it
+# is copied here unmodified from modules/naming-schema/convention/default.naming.yaml.
+# `index_modifier` below is the actual override this example demonstrates:
+# indices now start at 00 instead of 01.
+
+index_modifier: 0
+
+patterns:
+  default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME>-<INDEX;%02s>-<UNIQUE_ID_4>"
+
+  AzureAD:
+    default: "<TYPE>-<ENVIRONMENT>-<NAME>-<INDEX;%02s>"
+
+  Azure:
+    default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?SUBNAME;-%s>-<INDEX;%02s>"
+
+    Microsoft.Compute/virtualMachines:
+      default: "<TYPE><ENVIRONMENT><NAME><INDEX;%02s>"
+
+    Microsoft.ContainerRegistry/registries:
+      default: "<TYPE><LOCATION><ENVIRONMENT><NAME><INDEX;%02s>"
+
+    Microsoft.Resources/resourceGroups:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME>-<INDEX;%02s>"
+
+    Microsoft.Network/virtualNetworks:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME>-<INDEX;%02s>"
+
+    Microsoft.Network/virtualNetworks/subnets:
+      default: "<TYPE>-<ENVIRONMENT>-<NAME>-<INDEX;%02s>"
+
+    Microsoft.Network/publicIPAddresses:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME>-<INDEX;%02s>"
+
+    Microsoft.Network/networkSecurityGroups:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME>-<INDEX;%02s>"
+
+    Microsoft.KeyVault/vaults:
+      default: "<TYPE>-<ENVIRONMENT>-<NAME>-<UNIQUE_ID_4>"
+
+    Microsoft.Storage/storageAccounts:
+      default: "<TYPE><LOCATION><ENVIRONMENT><NAME><INDEX;%02s>"
+      vm_pattern: "<TYPE><LOCATION><ENVIRONMENT><NAME><INDEX;%02s>"
