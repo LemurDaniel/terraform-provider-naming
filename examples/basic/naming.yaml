@@ -1,0 +1,7 @@
+abbreviations:
+  Azure:
+    Microsoft.Storage/storageAccounts::default: mystg
+    Microsoft.CustomProvider/customResource::default: cust
+
+patterns:
+  default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME>-<INDEX;%02s>"
