@@ -1,7 +1,39 @@
+# Global default index offset, so indices start at 01 instead of 00.
+index_modifier: 1
+
 abbreviations:
   Azure:
     Microsoft.Storage/storageAccounts::default: mystg
+    Microsoft.KeyVault/vaults::default: mykv
     Microsoft.CustomProvider/customResource::default: cust
 
+# `patterns` is replaced wholesale when set - include every entry you need,
+# not just the one you're changing.
 patterns:
-  default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME>-<INDEX;%02s>"
+  default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME>-<INDEX;%02s>-<UNIQUE_ID_4>"
+
+  Azure:
+    default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?SUBNAME;-%s>-<INDEX;%02s>"
+
+    Microsoft.Storage/storageAccounts:
+      default: "<TYPE><LOCATION><ENVIRONMENT><NAME><INDEX;%02s>"
+
+    Microsoft.KeyVault/vaults:
+      default: "<TYPE>-<ENVIRONMENT>-<NAME>-<UNIQUE_ID_4>"
+
+    Microsoft.Network/virtualNetworks:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME>-<INDEX;%02s>"
+
+# Case-insensitive lookup tables consumers can use to shorten parameter
+# values before feeding them into a pattern.
+mappings:
+  location:
+    westeurope: we
+    West Europe: we
+    germanywestcentral: gwc
+    Germany West Central: gwc
+
+  environment:
+    development: dev
+    staging: stg
+    production: prod

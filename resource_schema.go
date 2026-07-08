@@ -23,6 +23,9 @@ import (
 // meaning beyond making seeded UUIDs unique to this provider.
 var namingSeedNamespace = uuid.MustParse("d29c7fb1-4c07-4f3c-9d90-14a765d5f2f0")
 
+// deterministicUUID derives a stable (v5) UUID from seed, so the same
+// random_seed always resolves to the same id across plans/applies/state
+// refreshes.
 func deterministicUUID(seed string) string {
 	return uuid.NewSHA1(namingSeedNamespace, []byte(seed)).String()
 }
@@ -38,10 +41,15 @@ var _ resource.ResourceWithModifyPlan = &SchemaResource{}
 // call).
 type SchemaResource struct{}
 
+// NewSchemaResource is the resource.Resource constructor registered with
+// the provider (see Resources in provider.go).
 func NewSchemaResource() resource.Resource {
 	return &SchemaResource{}
 }
 
+// schemaResourceModel is the Terraform state/plan representation of
+// naming_schema, mapped via `tfsdk` tags to the schema.Schema built in
+// (*SchemaResource).Schema.
 type schemaResourceModel struct {
 	Convention types.String  `tfsdk:"convention"`
 	Naming     types.String  `tfsdk:"naming"`
@@ -59,14 +67,23 @@ type schemaResourceModel struct {
 	ID     types.String `tfsdk:"id"`
 }
 
+// randomAttributeTypes is the attr.Type map for the nested `random` object
+// attribute, shared between plan/state construction sites so they can't
+// drift out of sync with the schema below.
 var randomAttributeTypes = map[string]attr.Type{
 	"uuid": types.StringType,
 }
 
+// Metadata sets the resource type name to "<provider_type_name>_schema",
+// i.e. "naming_schema".
 func (r *SchemaResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_schema"
 }
 
+// Schema defines the naming_schema resource's inputs (convention, naming,
+// parameters, random_seed) and computed outputs (the resolved schema
+// tables, the random id). See the package-level attribute descriptions
+// below for the full semantics of each field.
 func (r *SchemaResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Resolves a naming schema from a bundled convention, an optional partial override, and runtime parameters - and persists a random unique id for use in generated names (e.g. the `<UNIQUE_ID_n>` pattern token).",
@@ -184,6 +201,9 @@ func (r *SchemaResource) ModifyPlan(ctx context.Context, req resource.ModifyPlan
 	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
+// Create resolves the schema and, unless ModifyPlan already pinned a
+// deterministic id from random_seed, generates the random or seeded id and
+// persists it to state for the first time.
 func (r *SchemaResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data schemaResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -220,6 +240,10 @@ func (r *SchemaResource) Create(ctx context.Context, req resource.CreateRequest,
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
+// Read re-resolves the schema against the convention/naming/parameters
+// already in state, refreshing the computed attributes (e.g. after the
+// bundled convention or an override file changed on disk) while leaving
+// the persisted random id untouched.
 func (r *SchemaResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data schemaResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -234,6 +258,10 @@ func (r *SchemaResource) Read(ctx context.Context, req resource.ReadRequest, res
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
+// Update re-resolves the schema against the new plan. The random id itself
+// never changes on update: its plan modifier carries the prior state value
+// forward (or ModifyPlan already recomputed it deterministically for a
+// known random_seed).
 func (r *SchemaResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data schemaResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -251,6 +279,8 @@ func (r *SchemaResource) Update(ctx context.Context, req resource.UpdateRequest,
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
+// Delete is a no-op: naming_schema has no side effects outside Terraform
+// state to tear down.
 func (r *SchemaResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 }
 
