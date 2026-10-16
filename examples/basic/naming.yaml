@@ -7,8 +7,9 @@ abbreviations:
     Microsoft.KeyVault/vaults::default: mykv
     Microsoft.CustomProvider/customResource::default: cust
 
-# `patterns` is replaced wholesale when set - include every entry you need,
-# not just the one you're changing.
+# Every table is merged per key with your value winning, so a single entry
+# can be overridden without restating the block around it. The entries below
+# are spelled out only to show the shape.
 patterns:
   default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME>-<INDEX;%02s>-<UNIQUE_ID_4>"
 
