@@ -46,7 +46,6 @@ A runnable version of this, exercising every feature, lives under [`examples/bas
 - **Consistency** — every consumer renders names from the same schema, regardless of resource type.
 - **YAML-driven** — add abbreviations, mappings or patterns without touching any Go code, and swap the whole schema between environments without changing resource code.
 - **Partial overrides** — supply only the keys you want to change; everything else falls back to the bundled convention.
-- **No module indirection** — no `module` blocks, no output plumbing, no `schema` variable to thread through.
 - **Plan-time and stateless** — embedded YAML merged in memory. No API calls, nothing in state, every name known during `terraform plan`.
 
 ## 📦 What's in the Provider
@@ -133,7 +132,7 @@ Abbreviations, first match winning: `<type>::<naming_id>` → `<type>::<kind>` �
 
 Patterns, under `patterns.<provider>`: `<type>.<naming_id>` → `<type>.<kind>` → `<type>.default` → `<provider>.default` → `patterns.default`.
 
-Lower-casing: `<provider>.<type pattern>` (with `*` expanded to `.*`) → `<provider>.default` → `default`.
+Lower-casing: `<provider>.<type pattern>` → `<provider>.default` → `default`. A key under a provider is a pattern rather than an exact type name — `*` stands for any characters, and a prefix such as `Microsoft.Storage/` already covers every type in that namespace. See [the provider docs](docs/index.md#resolution-hierarchy) for the details.
 
 ## 🔁 Migrating from the Modules
 

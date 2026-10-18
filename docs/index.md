@@ -122,6 +122,20 @@ Patterns, looked up under `patterns.<provider>`:
 4. `<provider>.default`
 5. `patterns.default`
 
-Lower-case enforcement: `<provider>.<type pattern>` (with `*` expanded to `.*`) → `<provider>.default` → `default`. The bundled convention sets `default: true`, so names are lower-cased unless a convention says otherwise.
+Lower-case enforcement: `<provider>.<type pattern>` → `<provider>.default` → `default`. The bundled convention sets `default: true`, so names are lower-cased unless a convention says otherwise.
+
+A key under a provider is matched as a **pattern** against the resource type, not as an exact name: `*` stands for any characters, and the pattern only has to appear *somewhere* in the type. So all three of these cover `Microsoft.Storage/storageAccounts`:
+
+```yaml
+enforce_lower_case:
+  default: true
+  Azure:
+    "Microsoft.Storage/storageAccounts": false  # the exact type
+    "Microsoft.Storage/*": false                # every type in the namespace
+    "Microsoft.Storage": false                  # the same, since a prefix matches
+    "*": false                                  # every Azure type
+```
+
+If several keys match, the first in alphabetical order wins — so prefer one unambiguous key per type over overlapping patterns.
 
 A resource with no abbreviation anywhere, or a pattern whose required parameter is unset, fails the plan rather than rendering an empty segment.
