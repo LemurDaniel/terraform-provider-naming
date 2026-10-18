@@ -7,14 +7,6 @@ index_modifier: 1
 enforce_lower_case:
   default: true
 
-  azurerm:
-    default: false
-    container_registry: true
-    storage_account: true
-    key_vault: true
-    dns_zone: true
-    private_dns_zone: true
-
 #
 # ################################################################################################
 # ## Define the patterns for generating names.
