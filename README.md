@@ -1,5 +1,8 @@
 # Terraform Provider: naming
 
+> [!NOTE]
+> **AI disclaimer:** Yes, an AI helped write this. No, it did not go rogue and name your storage account `skynet-prod-001`. The code is tested, the names are checked against the original modules. 🤖
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 A schema-driven Terraform provider for consistent Azure resource naming, following Microsoft's [Cloud Adoption Framework (CAF)](https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/azure-best-practices/resource-abbreviations) conventions. Define your naming convention once in YAML — patterns, abbreviations, mappings, and settings — and render names natively in Terraform, without any HCL modules in the middle.
