@@ -46,7 +46,7 @@ Read [.claude/skills/go-tests/SKILL.md](.claude/skills/go-tests/SKILL.md) before
 | `internal/schemaengine/dynamic.go` | YAML value → `types.Dynamic` conversion |
 | `internal/schemaengine/convention/default.naming.yaml` | the bundled convention, embedded via `//go:embed` |
 | `docs/` | what the Terraform Registry renders — maintained by hand |
-| `examples/` | `basic/` is a runnable scratchpad; `provider/` and `data-sources/*/` are the doc examples |
+| `examples/` | `basic/` is a single-file runnable scratchpad; `complex/` is a multi-file example (provider, variables, names, outputs, override YAML). Each is standalone: `cd` in, `terraform init`, `apply` |
 
 ## Public Interface
 

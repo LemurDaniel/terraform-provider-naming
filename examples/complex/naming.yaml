@@ -1,0 +1,29 @@
+# A partial override. Every table is merged per key with this file winning,
+# so only what differs from the bundled convention is listed here.
+
+# A resource type the bundled convention does not know yet: an abbreviation ...
+abbreviations:
+  Azure:
+    Microsoft.Cache/redis::default: redis
+    # ... and a kind-specific one: "Microsoft.Cache/redis::session".
+    Microsoft.Cache/redis::session: redis-sess
+
+patterns:
+  Azure:
+    # ... and its pattern. Redis names are global, so a unique id keeps them free.
+    Microsoft.Cache/redis:
+      default: "<TYPE>-<ENVIRONMENT>-<NAME>-<UNIQUE_ID_4>"
+
+    # The bundled subnet pattern has no subname, so add the optional token.
+    Microsoft.Network/virtualNetworks/subnets:
+      default: "<TYPE>-<ENVIRONMENT>-<NAME><?SUBNAME;-%s>-<INDEX;%02s>"
+
+    # Overrides one kind of an existing type; the bundled default pattern and
+    # the other kinds are kept.
+    Microsoft.Storage/storageAccounts:
+      logs: "<TYPE>log<LOCATION><ENVIRONMENT><NAME><INDEX;%02s>"
+
+mappings:
+  location:
+    swedencentral: sdc
+    Sweden Central: sdc
