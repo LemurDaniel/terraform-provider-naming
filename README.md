@@ -1,5 +1,7 @@
 # Terraform Provider: naming
 
+![terraform-provider-naming](.github/social-preview.png)
+
 > [!NOTE]
 > **AI disclaimer:** Yes, an AI helped write this. No, it did not go rogue and name your storage account `skynet-prod-001`. The code is tested, the names are checked against the original modules. 🤖
 

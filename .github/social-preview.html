@@ -1,0 +1,105 @@
+<!doctype html>
+<!--
+  Source of .github/social-preview.png (1280x640, GitHub social preview).
+  Re-render with headless Edge/Chrome:
+    msedge --headless --hide-scrollbars --window-size=1280,640 --screenshot=social-preview.png social-preview.html
+  The names on the right are rendered by the bundled convention with
+  location=westeurope, environment=development, name=myapp.
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1280px; height: 640px; overflow: hidden; }
+  body {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    color: #e6edf3;
+    background:
+      radial-gradient(ellipse 700px 500px at 85% 15%, rgba(123, 66, 188, .35), transparent 70%),
+      radial-gradient(ellipse 600px 450px at 10% 95%, rgba(0, 120, 212, .30), transparent 70%),
+      #0b1020;
+    position: relative;
+  }
+  .stars { position: absolute; inset: 0; }
+  .wrap {
+    position: absolute; inset: 64px 72px;
+    display: grid; grid-template-columns: 1fr 520px; gap: 56px; align-items: center;
+  }
+  .eyebrow {
+    font: 600 18px "Cascadia Code", Consolas, monospace;
+    color: #8b9cff; letter-spacing: .04em; margin-bottom: 18px;
+  }
+  h1 { font-size: 68px; font-weight: 700; line-height: 1.02; letter-spacing: -.02em; }
+  h1 span {
+    background: linear-gradient(90deg, #844fba, #4a9eff);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .tag { margin-top: 22px; font-size: 25px; line-height: 1.4; color: #aab4c3; }
+  .chips { margin-top: 30px; display: flex; gap: 10px; flex-wrap: wrap; }
+  .chip {
+    font: 600 16px "Segoe UI", sans-serif; padding: 7px 14px; border-radius: 999px;
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); color: #cdd6e3;
+  }
+  .card {
+    background: rgba(13, 17, 30, .85); border: 1px solid rgba(255,255,255,.12);
+    border-radius: 16px; box-shadow: 0 24px 60px rgba(0,0,0,.45);
+    font: 19px/1.6 "Cascadia Code", Consolas, monospace; overflow: hidden;
+  }
+  .bar { display: flex; gap: 8px; padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,.08); }
+  .bar i { width: 12px; height: 12px; border-radius: 50%; background: #3a4256; }
+  .code { padding: 18px 24px 22px; }
+  .k { color: #c792ea; } .s { color: #a5d6a7; } .c { color: #6b7a90; } .p { color: #82aaff; }
+  .row { display: flex; justify-content: space-between; }
+  .row .arrow { color: #4a9eff; }
+  .badge {
+    position: absolute; right: 28px; bottom: 22px;
+    display: flex; align-items: center; gap: 8px;
+    font: 700 13px "Segoe UI", sans-serif; letter-spacing: .12em; text-transform: uppercase;
+    padding: 7px 13px; border-radius: 6px;
+    color: #ffd27a; background: rgba(255, 196, 0, .10); border: 1px solid rgba(255, 196, 0, .45);
+  }
+</style>
+</head>
+<body>
+  <svg class="stars" width="1280" height="640" aria-hidden="true">
+    <g fill="#fff">
+      <circle cx="60" cy="40" r="1" opacity=".5"/><circle cx="210" cy="120" r="1.4" opacity=".35"/>
+      <circle cx="390" cy="30" r="1" opacity=".6"/><circle cx="640" cy="80" r="1.2" opacity=".4"/>
+      <circle cx="760" cy="24" r="1" opacity=".5"/><circle cx="1010" cy="50" r="1.5" opacity=".45"/>
+      <circle cx="1220" cy="110" r="1" opacity=".6"/><circle cx="1180" cy="300" r="1.2" opacity=".3"/>
+      <circle cx="700" cy="610" r="1" opacity=".5"/><circle cx="480" cy="590" r="1.3" opacity=".35"/>
+      <circle cx="30" cy="330" r="1" opacity=".45"/><circle cx="905" cy="600" r="1" opacity=".4"/>
+      <circle cx="610" cy="330" r="1.1" opacity=".3"/><circle cx="140" cy="600" r="1" opacity=".5"/>
+    </g>
+  </svg>
+
+  <div class="wrap">
+    <div>
+      <div class="eyebrow">LemurDaniel/naming</div>
+      <h1>terraform-provider-<span>naming</span></h1>
+      <p class="tag">Consistent Azure resource names following the Cloud Adoption Framework — driven by YAML, known at plan time.</p>
+      <div class="chips">
+        <span class="chip">Terraform</span><span class="chip">Azure CAF</span>
+        <span class="chip">YAML</span><span class="chip">Stateless</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="bar"><i></i><i></i><i></i></div>
+      <div class="code">
+        <div><span class="k">data</span> <span class="s">"naming_name"</span> <span class="s">"st"</span> {</div>
+        <div>&nbsp;&nbsp;<span class="p">resource</span> = <span class="s">"Azure::Microsoft.Storage/…"</span></div>
+        <div>}</div>
+        <div class="c" style="margin-top:12px"># location=westeurope env=development</div>
+        <div class="row"><span class="c">resourceGroups</span><span><span class="arrow">→ </span>rg-we-dev-myapp-01</span></div>
+        <div class="row"><span class="c">virtualNetworks</span><span><span class="arrow">→ </span>vnet-we-dev-myapp-01</span></div>
+        <div class="row"><span class="c">storageAccounts</span><span><span class="arrow">→ </span>stwedevmyapp01</span></div>
+        <div class="row"><span class="c">managedClusters</span><span><span class="arrow">→ </span>aks-we-dev-myapp-01</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="badge">✦ AI Generated Artwork</div>
+</body>
+</html>
