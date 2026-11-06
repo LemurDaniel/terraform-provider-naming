@@ -20,7 +20,7 @@ patterns:
       default: "<TYPE><LOCATION><ENVIRONMENT><NAME><?PURPOSE><UNIQUE_ID_3>"
 
     Microsoft.KeyVault/vaults:
-      default: "<TYPE>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
 
     Microsoft.Network/virtualNetworks:
       default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<INDEX;%02s>"

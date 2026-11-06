@@ -30,6 +30,11 @@ patterns:
     Microsoft.BotService/botServices:
       default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
 
+    # AI Services / Foundry account: 2-64, alphanumerics and hyphens. The name is also the
+    # custom subdomain (<name>.cognitiveservices.azure.com), which is unique across Azure.
+    Microsoft.CognitiveServices/accounts:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
+
     # AI Search: 2-64, unique across Azure.
     Microsoft.Search/searchServices:
       default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
@@ -64,18 +69,19 @@ patterns:
     Microsoft.Synapse/workspaces:
       default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
 
-    # Synapse pools are unique inside their workspace, which already carries location and
-    # stage. SQL pool: 1-60, no hyphens. Spark pool: 1-15, letters and numbers.
+    # Synapse SQL pool: 1-60, no hyphens. Spark pool: 1-15, letters and numbers - with
+    # location and stage only a short workload name fits; its rule fails the plan on a longer one.
     Microsoft.Synapse/workspaces/sqlPools:
-      default: "<TYPE><NAME><?PURPOSE><INDEX;%02s>"
+      default: "<TYPE><LOCATION><ENVIRONMENT><NAME><?PURPOSE><INDEX;%02s>"
 
     Microsoft.Synapse/workspaces/bigDataPools:
-      default: "<TYPE><NAME><?PURPOSE><INDEX;%02s>"
+      default: "<TYPE><LOCATION><ENVIRONMENT><NAME><?PURPOSE><INDEX;%02s>"
 
     # ----- Compute / Web ---------------------------------------------------
-    # Windows VM names are limited to 15 characters - keep the pattern tight.
+    # VM: 1-64 (Linux); a Windows VM (the `windows` kind) allows 15, which location, stage
+    # and index leave little of - its rule fails the plan on a longer name.
     Microsoft.Compute/virtualMachines:
-      default: "<TYPE><ENVIRONMENT><NAME><?PURPOSE><INDEX;%02s>"
+      default: "<TYPE><LOCATION><ENVIRONMENT><NAME><?PURPOSE><INDEX;%02s>"
       # <name_id>: "<pattern>"
       # <name_kind>: "<pattern>"
 
@@ -98,6 +104,10 @@ patterns:
       default: "<TYPE><LOCATION><ENVIRONMENT><NAME><?PURPOSE><UNIQUE_ID_3>"
 
     # ----- Databases -------------------------------------------------------
+    # Cosmos DB account: 3-44, lowercase letters, numbers and hyphens, unique across Azure.
+    Microsoft.DocumentDB/databaseAccounts:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
+
     # Redis: 1-63, unique across Azure.
     Microsoft.Cache/Redis:
       default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
@@ -107,6 +117,13 @@ patterns:
       default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
 
     Microsoft.DBforPostgreSQL/servers:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
+
+    # MySQL, PostgreSQL flexible server: 3-63, unique across Azure.
+    Microsoft.DBforMySQL/flexibleServers:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
+
+    Microsoft.DBforPostgreSQL/flexibleServers:
       default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
 
     # SQL server, SQL managed instance: 1-63, lowercase, unique across Azure.
@@ -139,6 +156,10 @@ patterns:
     Microsoft.NotificationHubs/namespaces:
       default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
 
+    # Relay namespace: 6-50, starting with a letter, unique across Azure.
+    Microsoft.Relay/namespaces:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
+
     # SignalR: 3-63, unique across Azure.
     Microsoft.SignalRService/SignalR:
       default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
@@ -152,7 +173,7 @@ patterns:
       default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<INDEX;%02s>"
 
     Microsoft.Network/virtualNetworks/subnets:
-      default: "<TYPE>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<INDEX;%02s>"
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<INDEX;%02s>"
 
     Microsoft.Network/publicIPAddresses:
       default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<INDEX;%02s>"
@@ -164,6 +185,10 @@ patterns:
     Microsoft.Network/frontDoors:
       default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
 
+    # Front Door WAF policy: 1-128, letters and numbers only, starting with a letter.
+    Microsoft.Network/frontdoorWebApplicationFirewallPolicies:
+      default: "<TYPE><LOCATION><ENVIRONMENT><NAME><?PURPOSE><INDEX;%02s>"
+
     # Front Door endpoint: 1-50, unique across Azure by Microsoft's definitions.
     Microsoft.Cdn/profiles/afdEndpoints:
       default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
@@ -174,9 +199,10 @@ patterns:
 
     # ----- Security --------------------------------------------------------
     # Key Vault: 3-24, starting with a letter, alphanumerics and hyphens, unique across
-    # Azure. The location is left out to stay inside 24.
+    # Azure. Type, location, stage and id take 14-17 of them; its rule fails the plan on a
+    # name or purpose that does not fit.
     Microsoft.KeyVault/vaults:
-      default: "<TYPE>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
 
     # ----- Storage ---------------------------------------------------------
     # Storage account: 3-24, lowercase letters and numbers, unique across Azure.
@@ -318,6 +344,7 @@ abbreviations:
     #//// AI + machine learning
     Microsoft.CognitiveServices/accounts::CognitiveServices: ais
     Microsoft.CognitiveServices/accounts::AIServices: aif
+    Microsoft.CognitiveServices/accounts::default: aif
     Microsoft.CognitiveServices/accounts/projects::default: proj
     Microsoft.CognitiveServices/accounts::ComputerVision: cv
     Microsoft.CognitiveServices/accounts::ContentModerator: cm
@@ -336,6 +363,7 @@ abbreviations:
     Microsoft.MachineLearningServices/workspaces::Project: proj
     Microsoft.MachineLearningServices/workspaces::default: mlw
     Microsoft.CognitiveServices/accounts::OpenAI: oai
+    Microsoft.BotService/botServices::default: bot
     Microsoft.BotService/botServices::azurebot: bot
     Microsoft.VideoIndexer/accounts::default: avi
 
@@ -373,6 +401,7 @@ abbreviations:
     Microsoft.EventGrid/namespaces::default: evgns
     Microsoft.EventGrid/eventSubscriptions::default: evgs
     Microsoft.EventGrid/domains/topics::default: evgt
+    Microsoft.EventGrid/topics::default: evt
     Microsoft.EventGrid/systemTopics::default: egst
 
     # HDInsight/clusters::default: hadoop
@@ -449,12 +478,20 @@ abbreviations:
     Microsoft.DBforPostgreSQL/servers::default: psql
 
     Microsoft.Sql/managedInstances::default: sqlmi
+    Microsoft.Cache/redisEnterprise::default: amr
+    Microsoft.DBforPostgreSQL/flexibleServers::default: psql
+    Microsoft.DBforMySQL/flexibleServers::default: mysql
+    Microsoft.Security/pricings::default: mdc
+    Microsoft.KeyVault/vaults/keys::default: key
+    Microsoft.KeyVault/vaults/secrets::default: secret
+    Microsoft.Authorization/roleAssignments::default: ra
     Microsoft.Sql/servers::default: sql
     Microsoft.Sql/servers/databases::default: sqldb
     Microsoft.Sql/servers/jobAgents::default: sqlja
     Microsoft.Sql/servers/elasticpool::default: sqlep
 
     Microsoft.DocumentDB/databaseAccounts/sqlDatabases::default: cosmos
+    Microsoft.DocumentDB/databaseAccounts::default: cosno
     # DocumentDB/databaseAccounts::default: coscas
     # DocumentDB/databaseAccounts::default: cosmon
     # DocumentDb/databaseAccounts::default: cosno
@@ -505,8 +542,13 @@ abbreviations:
 
     Microsoft.Insights/components::default: appi
     Microsoft.Insights/actionGroups::default: ag
+    Microsoft.Insights/metricAlerts::default: ma
+    Microsoft.Insights/scheduledQueryRules::default: sqr
+    Microsoft.Insights/activityLogAlerts::default: ala
     Microsoft.Insights/dataCollectionRules::default: dcr
     Microsoft.Insights/dataCollectionEndpoints::default: dce
+
+    Microsoft.Consumption/budgets::default: budget
 
 
     #/////////////////////////////////////////////////////////////////////////
@@ -531,12 +573,14 @@ abbreviations:
 
     Microsoft.Network/ipGroups::default: ipg
     Microsoft.Network/connections::default: con
-    Microsoft.Network/dnsZones::default: 
+    Microsoft.Network/dnsZones::default: dnsz
+    Microsoft.Network/ddosProtectionPlans::default: ddos
     Microsoft.Network/dnsForwardingRulesets::default: dnsfrs
     Microsoft.Network/dnsResolvers::default: dnspr
     Microsoft.Network/dnsResolvers/inboundEndpoints::default: in
     Microsoft.Network/dnsResolvers/outboundEndpoints::default: out
-    Microsoft.Network/privateDnsZones::default: 
+    Microsoft.Network/privateDnsZones::default: pdnsz
+    Microsoft.Relay/namespaces::default: rn
     Microsoft.Network/azureFirewalls::default: afw
     Microsoft.Network/firewallPolicies::default: afwp
     Microsoft.Network/expressRouteCircuits::default: erc
@@ -598,7 +642,9 @@ abbreviations:
     Microsoft.DataProtection/backupVaults::default: bvault
     Microsoft.DataProtection/backupVaults/backupPolicies::default: bkpol
     Microsoft.DataProtection/resourceGuards::default: rgd
+    Microsoft.Storage/storageAccounts/blobServices/containers::default: cont
     Microsoft.Storage/storageAccounts/fileServices/shares::default: share
+    Microsoft.Storage/storageAccounts/queueServices/queues::default: stq
     Microsoft.Storage/storageAccounts::default: st
     Microsoft.Storage/storageAccounts::vm: stvm
     Microsoft.StorageSync/storageSyncServices::default: sss

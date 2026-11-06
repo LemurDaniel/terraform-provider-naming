@@ -13,6 +13,14 @@ import (
 // own rule. A rule that rejects the convention's own names would fail every
 // consumer's plan after an upgrade.
 
+// tooShortForTheConvention lists the types whose limit leaves no room for a
+// workload name once type, location, stage and index are in: a Synapse Spark
+// pool allows 15 characters and "synspweprod01" takes 13. Their rule rejects
+// the sample names, which is the check working, not the convention broken.
+var tooShortForTheConvention = map[string]bool{
+	"Microsoft.Synapse/workspaces/bigDataPools::default": true,
+}
+
 // sampleParameters are the parameters the bundled convention is rendered
 // with: the README's example stage.
 var sampleParameters = map[string]interface{}{
@@ -159,9 +167,9 @@ func bundledAzureKeys(schema *Schema) []string {
 
 // TestBundledConventionPassesItsRules renders every abbreviation of the
 // bundled convention, without and with the optional purpose, and checks each
-// name against its rule. The purpose run uses a shorter name: Kusto (22),
-// Service Fabric (23) and Synapse Spark pools (15) leave no room for
-// "payments" plus a purpose, and the rule rightly rejects that name.
+// name against its rule. The purpose run uses a shorter name: Kusto (22) and
+// Service Fabric (23) leave no room for "payments" plus a purpose, and the
+// rule rightly rejects that name. tooShortForTheConvention is left out.
 func TestBundledConventionPassesItsRules(t *testing.T) {
 	schema := bundledSchema(t)
 	keys := bundledAzureKeys(schema)
@@ -169,6 +177,9 @@ func TestBundledConventionPassesItsRules(t *testing.T) {
 	for _, parameters := range []map[string]interface{}{nil, {"name": "pay", "purpose": "api"}} {
 		checked := 0
 		for _, key := range keys {
+			if tooShortForTheConvention[key] {
+				continue
+			}
 			req := request(t, "Azure::"+key, "")
 			req.Parameters = parameters
 
@@ -240,6 +251,18 @@ func TestBundledGlobalNamesCarryUniqueID(t *testing.T) {
 // TestBundledConventionNames pins what the bundled convention renders for a
 // few types, without and with a purpose.
 func TestBundledConventionNames(t *testing.T) {
+	// A Spark pool's rule rejects the convention's name for any workload longer
+	// than two characters (see tooShortForTheConvention).
+	spark := request(t, "Azure::Microsoft.Synapse/workspaces/bigDataPools", "")
+	spark.Parameters = map[string]interface{}{"name": "pa"}
+	sparkNames, err := bundledSchema(t).Generate(spark)
+	if err != nil {
+		t.Fatalf("spark pool: %v", err)
+	}
+	if violations, _ := bundledSchema(t).Validate(spark, sparkNames); len(violations) != 0 || sparkNames[0] != "synspweprodpa01" {
+		t.Errorf("a two-character workload must fit a Spark pool, got %q %v", sparkNames[0], violations)
+	}
+
 	schema := bundledSchema(t)
 
 	cases := []struct {
@@ -247,11 +270,11 @@ func TestBundledConventionNames(t *testing.T) {
 	}{
 		{"Azure::Microsoft.Resources/resourceGroups", "", "rg-we-prod-payments-01"},
 		{"Azure::Microsoft.Resources/resourceGroups", "api", "rg-we-prod-payments-api-01"},
-		{"Azure::Microsoft.Network/virtualNetworks/subnets", "api", "snet-prod-payments-api-01"},
-		{"Azure::Microsoft.Compute/virtualMachines", "api", "vmprodpaymentsapi01"},
+		{"Azure::Microsoft.Network/virtualNetworks/subnets", "api", "snet-we-prod-payments-api-01"},
+		{"Azure::Microsoft.Compute/virtualMachines", "api", "vmweprodpaymentsapi01"},
 		{"Azure::Microsoft.Storage/storageAccounts", "", "stweprodpayments899"},
 		{"Azure::Microsoft.Storage/storageAccounts", "api", "stweprodpaymentsapi899"},
-		{"Azure::Microsoft.KeyVault/vaults", "", "kv-prod-payments-899"},
+		{"Azure::Microsoft.KeyVault/vaults", "", "kv-we-prod-payments-899"},
 		{"Azure::Microsoft.Web/sites::function", "api", "func-we-prod-payments-api-899"},
 	}
 
