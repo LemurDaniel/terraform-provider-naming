@@ -16,7 +16,7 @@ terraform {
   required_providers {
     naming = {
       source  = "LemurDaniel/naming"
-      version = "~> 1.0"
+      version = "~> 2.0"
     }
   }
 }
@@ -24,6 +24,9 @@ terraform {
 # The convention is declared once, on the provider.
 provider "naming" {
   convention = "default"
+
+  # Seeds <UNIQUE_ID_3>, which globally unique names (storage, key vault, ...) carry.
+  random_seed = "myapp-dev"
 
   parameters = {
     location    = "westeurope"
@@ -39,7 +42,7 @@ data "naming_name" "storage_account" {
 
 resource "azurerm_storage_account" "this" {
   name = data.naming_name.storage_account.name
-  # "stwedevmyapp01"
+  # "stwedevmyapp043"
 }
 ```
 
@@ -69,6 +72,7 @@ A runnable version of this, exercising every feature, lives under [`examples/bas
 | `naming` | `string` | No | Path to a YAML file partially overriding the bundled convention. |
 | `parameters` | `map(string)` | No | Runtime parameters (`location`, `environment`, `name`, ...) that patterns render from. |
 | `random_seed` | `string` | No | Seed for `<UNIQUE_ID_n>`. The same seed always yields the same id, so names stay stable without state. |
+| `validation` | `string` | No (default `"error"`) | What a name breaking its type's [naming rule](#%EF%B8%8F-naming-rules) does: `"error"`, `"warn"` or `"off"`. |
 
 ### `naming_name` arguments and outputs
 
@@ -138,6 +142,12 @@ Abbreviations, first match winning: `<type>::<naming_id>` → `<type>::<kind>` �
 Patterns, under `patterns.<provider>`: `<type>.<naming_id>` → `<type>.<kind>` → `<type>.default` → `<provider>.default` → `patterns.default`.
 
 Lower-casing: `<provider>.<type pattern>` → `<provider>.default` → `default`. A key under a provider is a pattern rather than an exact type name — `*` stands for any characters, and a prefix such as `Microsoft.Storage/` already covers every type in that namespace. See [the provider docs](docs/index.md#resolution-hierarchy) for the details.
+
+## ✔️ Naming Rules
+
+Every rendered name is checked against its resource type's naming rule — length, allowed characters, uniqueness scope — so a name Azure would reject fails `terraform plan`, not the apply. The limits come from Microsoft's [`Azure/naming/azurerm`](https://github.com/Azure/terraform-azurerm-naming) definitions, vendored under [`internal/schemaengine/rules/microsoft/`](internal/schemaengine/rules/microsoft/), and [`azure.rules.yaml`](internal/schemaengine/rules/azure.rules.yaml) maps each resource type to one and corrects it where it contradicts the [Azure naming rules](https://learn.microsoft.com/azure/azure-resource-manager/management/resource-name-rules).
+
+`validation = "warn"` reports instead of failing, `"off"` skips the check, and a `rules:` block in the `naming` file changes or adds a rule. See [the provider docs](docs/index.md#naming-rules). `scripts/Update-MicrosoftNamingRules.ps1 -Tag <x.y.z>` refreshes the vendored definitions and reports what changed.
 
 ## 🔁 Migrating from the Modules
 
@@ -227,11 +237,12 @@ go vet ./...
 go test ./...
 ```
 
-The suite covers the merge contract and the rendering engine, including the predecessor modules' own fixtures as a parity guard.
+The suite covers the merge contract and the rendering engine, including the predecessor modules' own fixtures as a parity guard, and renders every resource type of the bundled convention against its naming rule.
 
 ## 🙏 Acknowledgments
 
 - 🟣 [HashiCorp](https://www.hashicorp.com/) for Terraform and the [terraform-plugin-framework](https://github.com/hashicorp/terraform-plugin-framework)
 - ☁️ Microsoft for Azure and the extensive resource provider ecosystem
+- 📏 [Azure/terraform-azurerm-naming](https://github.com/Azure/terraform-azurerm-naming) for the naming definitions the rules are built on (MIT)
 - 🔤 [CAF Naming Conventions](https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/azure-best-practices/resource-abbreviations) for the abbreviation guidelines the bundled convention is built around
 - 💖 Open Source contributors and the community for inspiration

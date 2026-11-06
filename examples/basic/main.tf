@@ -1,7 +1,8 @@
 terraform {
   required_providers {
     naming = {
-      source = "LemurDaniel/naming"
+      source  = "LemurDaniel/naming"
+      version = "2.0.0"
     }
   }
 }
@@ -101,9 +102,10 @@ output "disks" {
 # ----------------------------------------------------------------------------
 # Example 4: per-call parameters and an optional token.
 #
-# Parameters given here are layered over the provider's. The <?SUBNAME;-%s>
-# token carries its separator inside the token, so an absent subname leaves
-# no stray hyphen behind.
+# Parameters given here are layered over the provider's. The <?PURPOSE;-%s>
+# token carries its separator inside the token, so an absent purpose leaves
+# no stray hyphen behind. App Service names are unique across Azure, so they
+# end in <UNIQUE_ID_3> rather than an index.
 # ----------------------------------------------------------------------------
 
 data "naming_name" "app_service" {
@@ -111,7 +113,7 @@ data "naming_name" "app_service" {
 
   parameters = {
     name    = "frontend"
-    subname = "api"
+    purpose = "api"
   }
 }
 

@@ -45,6 +45,10 @@ Read [.claude/skills/go-tests/SKILL.md](.claude/skills/go-tests/SKILL.md) before
 | `internal/schemaengine/generate.go` | the rendering engine — resource id, abbreviation, pattern, tokens, format |
 | `internal/schemaengine/dynamic.go` | YAML value → `types.Dynamic` conversion |
 | `internal/schemaengine/convention/default.naming.yaml` | the bundled convention, embedded via `//go:embed` |
+| `internal/schemaengine/rules.go` | the naming rules: loads them, resolves one per resource, checks a name (regexp2) |
+| `internal/schemaengine/rules/azure.rules.yaml` | resource type -> Microsoft entry, plus the corrections with their `reason` |
+| `internal/schemaengine/rules/microsoft/` | Microsoft's `resourceDefinition.json` (Azure/naming/azurerm), vendored unchanged, MIT |
+| `scripts/Update-MicrosoftNamingRules.ps1` | refreshes the vendored file from a release tag and reports what changed |
 | `docs/` | what the Terraform Registry renders — maintained by hand |
 | `examples/` | `basic/` is a single-file runnable scratchpad; `complex/` is a multi-file example (provider, variables, names, outputs, override YAML). Each is standalone: `cd` in, `terraform init`, `apply` |
 
@@ -55,6 +59,7 @@ Three things, all of them consumer-visible:
 1. **The provider config and the data sources' schemas** — attribute names, types, optional/required/computed.
 2. **The resolution semantics** — `Resolve` and `Generate`: which value a given convention + override + parameters combination resolves to, and which name it renders.
 3. **The bundled convention YAML** — consumers' names are built from it.
+4. **The naming rules** — `azure.rules.yaml` and the vendored definitions. A stricter rule fails a consumer's plan that passed before.
 
 A change to any of them is an interface change; see [.claude/skills/release/SKILL.md](.claude/skills/release/SKILL.md) for how that maps to a version bump.
 
@@ -97,6 +102,11 @@ Patterns (`Schema.Pattern`), under `patterns.<provider>`: `<type>.<naming_id>` �
 Lower-casing (`Schema.LowerCaseFor`): `<provider>.<type pattern>` → `<provider>.default` → `default`, where a type pattern has `*` expanded to `.*` and is matched **unanchored**. Keys are tried in sorted order so a type matching several patterns always resolves the same way.
 
 ## Gotchas
+
+- **Microsoft's definitions are wrong in places.** Correct an entry in `azure.rules.yaml` with a `reason` citing the [Azure naming rules](https://learn.microsoft.com/azure/azure-resource-manager/management/resource-name-rules), never in the vendored JSON - a refresh would drop it. Check a limit against that page, not against the JSON.
+- **The vendored regexes are HCL string literals.** The JSON file holds `\\\\(`, which decodes to the HCL source `\\(`, which HCL reads as the regex `\(`; `unescapeHCL` removes that last level. Compiled raw, `[^\\[\\]:|]` ends its character class early and turns the rest into an alternation.
+- **`TestBundledConventionPassesItsRules` renders every abbreviation of the bundled convention against its rule.** When it fails, the convention renders a name Azure rejects: fix the pattern (or the rule, if the rule is the wrong one). It found nine such types when the rules were added.
+- **The VM rule is per kind.** `virtualMachines` allows 64 (Linux), `virtualMachines::windows` 15. Microsoft's `virtual_machine` entry is the Windows computer-name limit.
 
 - **`index_modifier` shifts every index.** The bundled convention uses `1`, so the first name ends in `01`. Expected names in tests and docs are wrong most often because of this.
 - **`index.count` is how many names; `index.start` only shifts the first index.** `{ start = 2, count = 5 }` with `index_modifier: 1` yields five names numbered `03`–`07`. `Generate` iterates a pure offset from 0 because the start is already folded into the base index — adding the start again double-counts it.

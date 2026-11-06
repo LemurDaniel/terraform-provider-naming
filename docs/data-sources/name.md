@@ -48,7 +48,7 @@ data "naming_name" "app_service" {
 
   parameters = {
     name    = "frontend"
-    subname = "api"
+    purpose = "api"
   }
 }
 ```
@@ -80,6 +80,10 @@ Optional:
 
 - `count` (Number) How many names to render. Defaults to `1`.
 - `start` (Number) The first index. Defaults to `0`, which the convention's `index_modifier` shifts (so the first name is numbered `01` by default).
+
+## Naming Rules
+
+Every rendered name is checked against its resource type's naming rule — length and allowed characters, from Microsoft's `Azure/naming/azurerm` definitions. With the provider's default `validation = "error"` a name that breaks it fails the plan; `"warn"` reports it instead. See [Naming Rules](../index.md#naming-rules).
 
 ## Index Behaviour
 

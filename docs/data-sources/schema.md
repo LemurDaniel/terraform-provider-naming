@@ -27,7 +27,7 @@ output "storage_account_abbreviation" {
 
 output "storage_account_pattern" {
   value = data.naming_schema.this.patterns.Azure["Microsoft.Storage/storageAccounts"].default
-  # "<TYPE><LOCATION><ENVIRONMENT><NAME><INDEX;%02s>"
+  # "<TYPE><LOCATION><ENVIRONMENT><NAME><?PURPOSE><UNIQUE_ID_3>"
 }
 
 output "index_modifier" {
@@ -47,7 +47,9 @@ output "index_modifier" {
 - `index_modifier` (Dynamic) The resolved index offset (e.g. `1`, so rendered indices start at `01`).
 - `mappings` (Dynamic) The merged mappings table (e.g. location and environment shortnames).
 - `patterns` (Dynamic) The merged patterns table.
+- `rules` (Dynamic) The merged naming rules table, keyed `<provider>` then `"<Namespace>/<Type>[::<kind>]"`. An entry names its Microsoft definition (`microsoft`) and any value that overrides it (`min_length`, `max_length`, `regex`, `scope`).
 - `unique_id` (String) The UUID that `<UNIQUE_ID_n>` renders from, derived from the provider's `random_seed`. Empty when no seed is configured.
+- `validation` (String) The resolved validation mode: `error`, `warn` or `off`.
 
 ## Why the tables are dynamic
 

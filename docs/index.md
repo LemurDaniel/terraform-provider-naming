@@ -20,7 +20,7 @@ terraform {
   required_providers {
     naming = {
       source  = "LemurDaniel/naming"
-      version = "~> 1.0"
+      version = "~> 2.0"
     }
   }
 }
@@ -28,6 +28,9 @@ terraform {
 provider "naming" {
   convention = "default"
   naming     = "${path.module}/naming.yaml"
+
+  # Seeds <UNIQUE_ID_3>, which globally unique names (storage, key vault, ...) carry.
+  random_seed = "myapp-dev"
 
   parameters = {
     location    = "westeurope"
@@ -57,6 +60,7 @@ Everything resolves during `terraform plan` — the provider reads embedded YAML
 - `naming` (String) Path to a YAML file that partially overrides the bundled convention (e.g. `"${path.module}/naming.yaml"`). Every table is merged per key with your value winning, so an override may set a single abbreviation or pattern without restating the block around it.
 - `parameters` (Map of String) Runtime parameters (`location`, `environment`, `name`, ...) that patterns render from. Layered on top of the convention's `default_parameters`, and overridable per call on the data source.
 - `random_seed` (String) Seed for the `<UNIQUE_ID_n>` pattern token. The same seed always resolves to the same id, so names stay stable across plans and applies without any state. Required only if a pattern you use actually contains the token.
+- `validation` (String) What a rendered name that breaks its resource type's naming rule (length, allowed characters) does: `"error"` fails the plan, `"warn"` reports a warning, `"off"` skips the check. Defaults to `"error"`. The rules come from Microsoft's `Azure/naming/azurerm` definitions, corrected where they are wrong, and can be changed under `rules:` in the `naming` file.
 
 ## Merge Semantics
 
@@ -88,6 +92,7 @@ The bundled `"default"` convention is embedded in the provider binary; its sourc
 - **`abbreviations`** — keyed `<provider>` → `"<Namespace>/<Type>::<kind>"` → abbreviation, e.g. `Azure."Microsoft.Compute/disks::os": osdisk`. The `::<kind>` suffix is how one resource type carries several abbreviations.
 - **`mappings`** — per-parameter lookup tables applied before a pattern renders (`westeurope` → `we`, `development` → `dev`). Location codes follow the Azure Verified Modules `geo_code` convention. Unmapped values pass through unchanged.
 - **`default_parameters`** — parameter defaults the provider's `parameters` override.
+- **`rules`** — optional; naming rules merged over the provider's bundled ones, see [Naming Rules](#naming-rules).
 
 To add a resource type, add an entry under `abbreviations`, and a pattern under `patterns` only if the global or provider default does not suit it.
 
@@ -103,7 +108,7 @@ To add a resource type, add an entry under `abbreviations`, and a pattern under 
 | `<INDEX;%02s>` | Numeric index, shifted by `index_modifier` |
 | `<UNIQUE_ID_n>` | First *n* characters of the `random_seed` UUID |
 
-Put a separator **inside** an optional token (`<?SUBNAME;-%s>`), or a missing parameter leaves a stray separator behind. A literal `--` in a finished name is collapsed to `-`.
+Put a separator **inside** an optional token (`<?PURPOSE;-%s>`), or a missing parameter leaves a stray separator behind. A literal `--` in a finished name is collapsed to `-`.
 
 ## Resolution Hierarchy
 
@@ -139,3 +144,34 @@ enforce_lower_case:
 If several keys match, the first in alphabetical order wins — so prefer one unambiguous key per type over overlapping patterns.
 
 A resource with no abbreviation anywhere, or a pattern whose required parameter is unset, fails the plan rather than rendering an empty segment.
+
+## Naming Rules
+
+Every name `naming_name` renders is checked against its resource type's **naming rule** — length, allowed characters and where it must be unique — before the plan continues. A name Azure would reject fails the plan instead of the apply:
+
+```text
+Error: Name breaks its naming rule
+
+"stweprodpaymentsworkloadsplatform01" for "Azure::Microsoft.Storage/storageAccounts"
+is 35 characters long, the maximum is 24 and does not match ^(?=.{3,24}$)[a-z0-9]+$
+- rule rules.Azure.Microsoft.Storage/storageAccounts (Microsoft: storage_account).
+```
+
+The rules come from Microsoft's own definitions: the [`resourceDefinition.json`](https://github.com/Azure/terraform-azurerm-naming/blob/master/resourceDefinition.json) of the `Azure/naming/azurerm` module, vendored into the provider. The provider's [rules file](https://github.com/LemurDaniel/terraform-provider-naming/blob/master/internal/schemaengine/rules/azure.rules.yaml) maps each resource type to its entry there, and corrects an entry where it contradicts the [Azure naming rules](https://learn.microsoft.com/azure/azure-resource-manager/management/resource-name-rules) — managed disks, for instance, allow hyphens that the Microsoft entry forbids. Each correction carries its `reason`.
+
+A rule resolves like an abbreviation, first match winning: `<type>::<naming_id>` → `<type>::<kind>` → `<type>`. A Windows VM is the `windows` kind (`Azure::Microsoft.Compute/virtualMachines::windows`, 15 characters); the type itself allows the 64 of a Linux VM. A type without a rule is not checked.
+
+The `validation` argument sets what a violation does: `"error"` (the default) fails the plan, `"warn"` reports a warning and keeps the name, `"off"` skips the check. A rule is changed, or added for a type the provider does not know, under `rules:` in the `naming` file — merged per key like every other table:
+
+```yaml
+# naming.yaml
+rules:
+  Azure:
+    Microsoft.Storage/storageAccounts:
+      max_length: 20                       # stricter than Azure's 24
+    Microsoft.Web/sites/slots:
+      microsoft: app_service               # reuse a Microsoft entry ...
+      max_length: 59                       # ... with its own limit
+```
+
+A rule entry takes `microsoft` (the Microsoft entry to start from), `min_length`, `max_length`, `regex` and `scope`; each explicit value wins over the Microsoft entry. Regexes may use lookaheads (`(?!.*--)`), as Microsoft's do. [`naming_schema`](data-sources/schema.md) returns the merged `rules` table.
