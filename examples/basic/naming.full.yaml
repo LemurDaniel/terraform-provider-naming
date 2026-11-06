@@ -12,54 +12,177 @@ enforce_lower_case:
 # ## Define the patterns for generating names.
 
 patterns:
-  default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME>-<INDEX;%02s>-<UNIQUE_ID_4>"
+  default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<INDEX;%02s>"
 
   # AzureAD resources have no location — pattern omits <LOCATION>.
   AzureAD:
-    default: "<TYPE>-<ENVIRONMENT>-<NAME>-<INDEX;%02s>"
+    default: "<TYPE>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<INDEX;%02s>"
 
+  # Every Azure pattern carries the optional <?PURPOSE> after <NAME>. A name that is unique
+  # across Azure (a DNS name) ends in <UNIQUE_ID_3> from random_seed in place of <INDEX>:
+  # workload, stage and region alone collide with another tenant's, so a second instance
+  # differs in <NAME> or <PURPOSE>, not in an index. Limits are checked against the rules.
   Azure:
-    default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?SUBNAME;-%s>-<INDEX;%02s>"
+    default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<INDEX;%02s>"
+
+    # ----- AI + Machine Learning -------------------------------------------
+    # Bot: 2-64, unique across Azure.
+    Microsoft.BotService/botServices:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
+
+    # AI Search: 2-64, unique across Azure.
+    Microsoft.Search/searchServices:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
+
+    # ----- Analytics -------------------------------------------------------
+    # Analysis Services: 3-63, lowercase letters and numbers, starting with a letter.
+    Microsoft.AnalysisServices/servers:
+      default: "<TYPE><LOCATION><ENVIRONMENT><NAME><?PURPOSE><INDEX;%02s>"
+
+    # Fabric capacity: 3-63, lowercase letters and numbers, starting with a letter.
+    Microsoft.Fabric/capacities:
+      default: "<TYPE><LOCATION><ENVIRONMENT><NAME><?PURPOSE><INDEX;%02s>"
+
+    # Data Factory: 3-63, unique across Azure.
+    Microsoft.DataFactory/factories:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
+
+    # Data Lake Store: 3-24, lowercase letters and numbers, unique across Azure.
+    Microsoft.DataLakeStore/accounts:
+      default: "<TYPE><LOCATION><ENVIRONMENT><NAME><?PURPOSE><UNIQUE_ID_3>"
+
+    # Data Explorer cluster: 4-22, lowercase letters and numbers, starting with a letter,
+    # unique across Azure.
+    Microsoft.Kusto/clusters:
+      default: "<TYPE><LOCATION><ENVIRONMENT><NAME><?PURPOSE><UNIQUE_ID_3>"
+
+    # Purview: 3-63, unique across Azure.
+    Microsoft.Purview/accounts:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
+
+    # Synapse workspace: 1-50, unique across Azure.
+    Microsoft.Synapse/workspaces:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
+
+    # Synapse pools are unique inside their workspace, which already carries location and
+    # stage. SQL pool: 1-60, no hyphens. Spark pool: 1-15, letters and numbers.
+    Microsoft.Synapse/workspaces/sqlPools:
+      default: "<TYPE><NAME><?PURPOSE><INDEX;%02s>"
+
+    Microsoft.Synapse/workspaces/bigDataPools:
+      default: "<TYPE><NAME><?PURPOSE><INDEX;%02s>"
 
     # ----- Compute / Web ---------------------------------------------------
     # Windows VM names are limited to 15 characters - keep the pattern tight.
     Microsoft.Compute/virtualMachines:
-      default: "<TYPE><ENVIRONMENT><NAME><INDEX;%02s>"
+      default: "<TYPE><ENVIRONMENT><NAME><?PURPOSE><INDEX;%02s>"
       # <name_id>: "<pattern>"
       # <name_kind>: "<pattern>"
-      
+
+    # Gallery: 1-80, alphanumerics, underscores and periods, no hyphens.
+    Microsoft.Compute/galleries:
+      default: "<TYPE><LOCATION><ENVIRONMENT><NAME><?PURPOSE><INDEX;%02s>"
+
+    # Batch account: 3-24, lowercase letters and numbers only.
+    Microsoft.Batch/batchAccounts:
+      default: "<TYPE><LOCATION><ENVIRONMENT><NAME><?PURPOSE><INDEX;%02s>"
+
+    # App Service, Function App: 2-60, alphanumerics and hyphens, unique across Azure
+    # (<name>.azurewebsites.net). Every kind of the type takes this pattern.
+    Microsoft.Web/sites:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
+
     # ----- Containers ------------------------------------------------------
-    # Container Registry: 5-50 chars, alphanumeric only (no hyphens).
+    # Container Registry: 5-50, alphanumerics only, unique across Azure (<name>.azurecr.io).
     Microsoft.ContainerRegistry/registries:
-      default: "<TYPE><LOCATION><ENVIRONMENT><NAME><INDEX;%02s>"
+      default: "<TYPE><LOCATION><ENVIRONMENT><NAME><?PURPOSE><UNIQUE_ID_3>"
+
+    # ----- Databases -------------------------------------------------------
+    # Redis: 1-63, unique across Azure.
+    Microsoft.Cache/Redis:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
+
+    # MySQL, PostgreSQL server: 3-63, unique across Azure.
+    Microsoft.DBforMySQL/servers:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
+
+    Microsoft.DBforPostgreSQL/servers:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
+
+    # SQL server, SQL managed instance: 1-63, lowercase, unique across Azure.
+    Microsoft.Sql/servers:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
+
+    Microsoft.Sql/managedInstances:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
+
+    # ----- Integration + Messaging -----------------------------------------
+    # API Management: 1-50, unique across Azure.
+    Microsoft.ApiManagement/service:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
+
+    # Communication Services: 1-63, unique across Azure.
+    Microsoft.Communication/communicationServices:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
+
+    # IoT Hub: 3-50, unique across Azure.
+    Microsoft.Devices/IotHubs:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
+
+    # Event Hubs, Service Bus, Notification Hubs namespace: 6-50, unique across Azure.
+    Microsoft.EventHub/namespaces:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
+
+    Microsoft.ServiceBus/namespaces:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
+
+    Microsoft.NotificationHubs/namespaces:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
+
+    # SignalR: 3-63, unique across Azure.
+    Microsoft.SignalRService/SignalR:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
 
     # ----- Management / Governance -----------------------------------------
     Microsoft.Resources/resourceGroups:
-      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME>-<INDEX;%02s>"
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<INDEX;%02s>"
 
     # ----- Networking ------------------------------------------------------
     Microsoft.Network/virtualNetworks:
-      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME>-<INDEX;%02s>"
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<INDEX;%02s>"
 
     Microsoft.Network/virtualNetworks/subnets:
-      default: "<TYPE>-<ENVIRONMENT>-<NAME>-<INDEX;%02s>"
+      default: "<TYPE>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<INDEX;%02s>"
 
     Microsoft.Network/publicIPAddresses:
-      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME>-<INDEX;%02s>"
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<INDEX;%02s>"
 
     Microsoft.Network/networkSecurityGroups:
-      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME>-<INDEX;%02s>"
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<INDEX;%02s>"
+
+    # Front Door: 5-64, unique across Azure.
+    Microsoft.Network/frontDoors:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
+
+    # Front Door endpoint: 1-50, unique across Azure by Microsoft's definitions.
+    Microsoft.Cdn/profiles/afdEndpoints:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
+
+    # Traffic Manager: 1-63, unique across Azure (<name>.trafficmanager.net).
+    Microsoft.Network/trafficManagerProfiles:
+      default: "<TYPE>-<LOCATION>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
 
     # ----- Security --------------------------------------------------------
-    # Key Vault: 3-24 chars, must start with letter, alphanumeric + hyphens.
+    # Key Vault: 3-24, starting with a letter, alphanumerics and hyphens, unique across
+    # Azure. The location is left out to stay inside 24.
     Microsoft.KeyVault/vaults:
-      default: "<TYPE>-<ENVIRONMENT>-<NAME>-<UNIQUE_ID_4>"
+      default: "<TYPE>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
 
     # ----- Storage ---------------------------------------------------------
-    # Storage account: 3-24 chars, alphanumeric only (no hyphens), lowercase.
+    # Storage account: 3-24, lowercase letters and numbers, unique across Azure.
     Microsoft.Storage/storageAccounts:
-      default: "<TYPE><LOCATION><ENVIRONMENT><NAME><INDEX;%02s>"
-      vm_pattern: "<TYPE><LOCATION><ENVIRONMENT><NAME><INDEX;%02s>"
+      default: "<TYPE><LOCATION><ENVIRONMENT><NAME><?PURPOSE><UNIQUE_ID_3>"
+      vm_pattern: "<TYPE><LOCATION><ENVIRONMENT><NAME><?PURPOSE><UNIQUE_ID_3>"
       # <name_id>: "<pattern>"
       # <name_kind>: "<pattern>"
 

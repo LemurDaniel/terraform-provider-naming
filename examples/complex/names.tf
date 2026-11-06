@@ -16,14 +16,14 @@ data "naming_name" "redis" {
   resource = "Azure::Microsoft.Cache/redis"
 }
 
-# for_each over a variable: the subname parameter fills the pattern's optional
-# <?SUBNAME;-%s> token.
+# for_each over a variable: the purpose parameter fills the pattern's optional
+# <?PURPOSE;-%s> token.
 data "naming_name" "subnet" {
   for_each = var.subnets
   resource = "Azure::Microsoft.Network/virtualNetworks/subnets"
 
   parameters = {
-    subname = each.key
+    purpose = each.key
   }
 }
 

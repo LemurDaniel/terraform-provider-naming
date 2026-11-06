@@ -12,16 +12,12 @@ patterns:
   Azure:
     # ... and its pattern. Redis names are global, so a unique id keeps them free.
     Microsoft.Cache/redis:
-      default: "<TYPE>-<ENVIRONMENT>-<NAME>-<UNIQUE_ID_4>"
-
-    # The bundled subnet pattern has no subname, so add the optional token.
-    Microsoft.Network/virtualNetworks/subnets:
-      default: "<TYPE>-<ENVIRONMENT>-<NAME><?SUBNAME;-%s>-<INDEX;%02s>"
+      default: "<TYPE>-<ENVIRONMENT>-<NAME><?PURPOSE;-%s>-<UNIQUE_ID_3>"
 
     # Overrides one kind of an existing type; the bundled default pattern and
     # the other kinds are kept.
     Microsoft.Storage/storageAccounts:
-      logs: "<TYPE>log<LOCATION><ENVIRONMENT><NAME><INDEX;%02s>"
+      logs: "<TYPE>log<LOCATION><ENVIRONMENT><NAME><UNIQUE_ID_3>"
 
 mappings:
   location:

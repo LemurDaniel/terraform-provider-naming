@@ -17,7 +17,7 @@ variable "workload" {
 }
 
 variable "subnets" {
-  description = "Subnets to name, keyed by purpose. Each purpose becomes the pattern's optional subname."
+  description = "Subnets to name, keyed by purpose. Each one fills the pattern's optional <PURPOSE>."
   type        = set(string)
   default     = ["web", "app", "data"]
 }
