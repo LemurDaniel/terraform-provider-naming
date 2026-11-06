@@ -34,6 +34,8 @@ type schemaDataSourceModel struct {
 	Mappings          types.Dynamic `tfsdk:"mappings"`
 	Patterns          types.Dynamic `tfsdk:"patterns"`
 	DefaultParameters types.Dynamic `tfsdk:"default_parameters"`
+	Rules             types.Dynamic `tfsdk:"rules"`
+	Validation        types.String  `tfsdk:"validation"`
 	UniqueID          types.String  `tfsdk:"unique_id"`
 }
 
@@ -68,6 +70,14 @@ func (d *SchemaDataSource) Schema(ctx context.Context, req datasource.SchemaRequ
 			"default_parameters": schema.DynamicAttribute{
 				Computed:            true,
 				MarkdownDescription: "The convention's default parameters with the provider's `parameters` layered on top.",
+			},
+			"rules": schema.DynamicAttribute{
+				Computed:            true,
+				MarkdownDescription: "The merged naming rules table, keyed `<provider>` then `\"<Namespace>/<Type>[::<kind>]\"`. An entry names its Microsoft definition (`microsoft`) and any value that overrides it (`min_length`, `max_length`, `regex`, `scope`).",
+			},
+			"validation": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "The resolved validation mode: `error`, `warn` or `off`.",
 			},
 			"unique_id": schema.StringAttribute{
 				Computed:            true,
@@ -120,11 +130,13 @@ func (d *SchemaDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	set("mappings", d.schema.Mappings, &state.Mappings)
 	set("patterns", d.schema.Patterns, &state.Patterns)
 	set("default_parameters", d.schema.DefaultParameters, &state.DefaultParameters)
+	set("rules", d.schema.Rules, &state.Rules)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	state.UniqueID = types.StringValue(d.schema.UniqueID)
+	state.Validation = types.StringValue(d.schema.Validation)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

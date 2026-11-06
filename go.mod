@@ -3,8 +3,10 @@ module github.com/LemurDaniel/terraform-provider-naming
 go 1.23
 
 require (
+	github.com/dlclark/regexp2 v1.12.0
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/terraform-plugin-framework v1.13.0
+	github.com/hashicorp/terraform-plugin-framework-validators v0.16.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

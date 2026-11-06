@@ -33,6 +33,13 @@ type Schema struct {
 	Patterns          map[string]interface{}
 	DefaultParameters map[string]interface{}
 
+	// Rules is the bundled rules table with the convention's and the
+	// override's `rules:` merged over it (see rules.go).
+	Rules map[string]interface{}
+	// Validation is what a name breaking its rule does: "error" fails the
+	// plan, "warn" reports it, "off" skips the check.
+	Validation string
+
 	// UniqueID is the resolved random_seed UUID, or "" when no seed was set.
 	// Rendering a pattern that contains <UNIQUE_ID_n> without one is an error
 	// rather than a silently empty segment.
@@ -50,6 +57,8 @@ type Config struct {
 	Parameters map[string]interface{}
 	// RandomSeed pins <UNIQUE_ID_n> deterministically. Empty means unset.
 	RandomSeed string
+	// Validation is "error" (the default when empty), "warn" or "off".
+	Validation string
 }
 
 // Resolve loads the bundled convention named by cfg.Convention, deep-merges
@@ -73,6 +82,16 @@ func Resolve(cfg Config) (*Schema, error) {
 	}
 
 	overrideMap, err := LoadOverrideFile(cfg.NamingFile)
+	if err != nil {
+		return nil, err
+	}
+
+	bundledRules, err := LoadRules()
+	if err != nil {
+		return nil, err
+	}
+
+	validation, err := resolveValidation(cfg.Validation)
 	if err != nil {
 		return nil, err
 	}
@@ -108,6 +127,14 @@ func Resolve(cfg Config) (*Schema, error) {
 			deepMerge(conventionMap, overrideMap, "default_parameters"),
 			cfg.Parameters,
 		),
+
+		// rules has three layers, each winning over the last: the bundled
+		// rules file, the convention's rules, then the override's.
+		Rules: DeepMergeUserWins(
+			DeepMergeUserWins(bundledRules, AsMap(GetKey(conventionMap, "rules"))),
+			AsMap(GetKey(overrideMap, "rules")),
+		),
+		Validation: validation,
 	}
 
 	if cfg.RandomSeed != "" {

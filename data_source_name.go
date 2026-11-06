@@ -170,15 +170,39 @@ func (d *NameDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		}
 	}
 
-	names, err := d.schema.Generate(schemaengine.Request{
+	request := schemaengine.Request{
 		Resource:   resourceID,
 		NamingID:   config.NamingID.ValueString(),
 		IndexStart: int(start),
 		IndexCount: int(count),
 		Parameters: parameters,
-	})
+	}
+
+	names, err := d.schema.Generate(request)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to render the name", err.Error())
+		return
+	}
+
+	// Every name is checked against its type's naming rule (length,
+	// characters); the provider's validation decides whether a violation
+	// fails the plan or is only reported.
+	violations, err := d.schema.Validate(request, names)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to check the name against its naming rule", err.Error())
+		return
+	}
+	for _, violation := range violations {
+		if d.schema.Validation == schemaengine.ValidationWarn {
+			resp.Diagnostics.AddWarning("Name breaks its naming rule", violation)
+			continue
+		}
+		resp.Diagnostics.AddError(
+			"Name breaks its naming rule",
+			violation+". Change the pattern or the parameters, correct the rule under `rules:` in the naming file, or set validation = \"warn\" on the provider.",
+		)
+	}
+	if resp.Diagnostics.HasError() {
 		return
 	}
 

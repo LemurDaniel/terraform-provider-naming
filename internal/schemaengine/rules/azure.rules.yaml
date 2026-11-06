@@ -1,0 +1,347 @@
+#
+# ################################################################################################
+# ## The naming rules every rendered name is checked against.
+#
+# Keyed like the abbreviations: <provider> -> "<Namespace>/<Type>[::<kind>]". A rule resolves
+# <type>::<naming_id> -> <type>::<kind> -> <type>; a type without a rule is not checked.
+#
+#   microsoft:   the entry in Microsoft's resourceDefinition.json (Azure/naming/azurerm, vendored
+#                under microsoft/) the limits are taken from.
+#   min_length, max_length, regex, scope:
+#                set explicitly, each wins over the referenced entry. A correction carries
+#                `reason` with the Azure documentation it follows:
+#                https://learn.microsoft.com/azure/azure-resource-manager/management/resource-name-rules
+#
+# A convention or a naming file may carry a `rules:` block of the same shape; it is merged over
+# this one per key, the caller's value winning.
+
+Azure:
+
+  # ----- AI + Machine Learning -------------------------------------------
+  Microsoft.CognitiveServices/accounts:
+    microsoft: cognitive_account
+    regex: "^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]$"
+    reason: "resourceDefinition.json gives 2-64 but a 260-character lookahead, and allows a trailing hyphen. Azure: 2-64, alphanumerics and hyphens, starting and ending with an alphanumeric."
+  Microsoft.MachineLearningServices/workspaces:
+    microsoft: machine_learning_workspace
+  Microsoft.BotService/botServices:
+    microsoft: bot_web_app
+  Microsoft.Search/searchServices:
+    microsoft: search_service
+
+  # ----- Analytics -------------------------------------------------------
+  Microsoft.Fabric/capacities:
+    microsoft: fabric_capacity
+  Microsoft.AnalysisServices/servers:
+    microsoft: analysis_services_server
+  Microsoft.DataFactory/factories:
+    microsoft: data_factory
+  Microsoft.DataLakeStore/accounts:
+    microsoft: data_lake_store
+    scope: global
+    reason: "resourceDefinition.json gives the scope 'parent'. Azure: unique across Azure."
+  Microsoft.PowerBIDedicated/capacities:
+    microsoft: powerbi_embedded
+  Microsoft.Databricks/workspaces/accessConnectors:
+    microsoft: databricks_access_connector
+  Microsoft.Databricks/workspaces:
+    microsoft: databricks_workspace
+  Microsoft.Kusto/clusters:
+    microsoft: kusto_cluster
+  Microsoft.Kusto/clusters/databases:
+    microsoft: kusto_database
+  Microsoft.Synapse/privateLinkHubs:
+    microsoft: synapse_private_link_hub
+  Microsoft.Synapse/workspaces/sqlPools:
+    microsoft: synapse_sql_pool
+  Microsoft.Synapse/workspaces/bigDataPools:
+    microsoft: synapse_spark_pool
+    min_length: 1
+    max_length: 15
+    regex: "^[a-zA-Z]([a-zA-Z0-9]*[a-zA-Z0-9])?$"
+    reason: "resourceDefinition.json gives 3-32. Azure: 1-15, letters and numbers, starting with a letter."
+  Microsoft.Synapse/workspaces:
+    microsoft: synapse_workspace
+
+  # ----- Internet of Things ----------------------------------------------
+  Microsoft.Devices/IotHubs:
+    microsoft: iothub
+  Microsoft.Devices/provisioningServices:
+    microsoft: iothub_dps
+    scope: resourceGroup
+    reason: "resourceDefinition.json spells the scope 'resoureceGroup'."
+  Microsoft.Devices/provisioningServices/certificates:
+    microsoft: iothub_dps_certificate
+
+  # ----- Integration + Messaging -----------------------------------------
+  Microsoft.EventHub/namespaces:
+    microsoft: eventhub_namespace
+    min_length: 6
+    reason: "resourceDefinition.json gives 1-50. Azure: 6-50."
+  Microsoft.EventHub/namespaces/eventHubs:
+    microsoft: eventhub
+  Microsoft.EventGrid/domains:
+    microsoft: eventgrid_domain
+  Microsoft.EventGrid/namespaces:
+    microsoft: eventgrid_namespace
+  Microsoft.EventGrid/eventSubscriptions:
+    microsoft: eventgrid_event_subscription
+  Microsoft.EventGrid/domains/topics:
+    microsoft: eventgrid_domain_topic
+  Microsoft.EventGrid/systemTopics:
+    microsoft: eventgrid_system_topic
+  Microsoft.NotificationHubs/namespaces/notificationHubs:
+    microsoft: notification_hub
+  Microsoft.NotificationHubs/namespaces:
+    microsoft: notification_hub_namespace
+  Microsoft.ApiManagement/service:
+    microsoft: api_management
+  Microsoft.Logic/integrationAccounts:
+    microsoft: logic_app_integration_account
+  Microsoft.Logic/workflows:
+    microsoft: logic_app_workflow
+  Microsoft.ServiceBus/namespaces:
+    microsoft: servicebus_namespace
+  Microsoft.ServiceBus/namespaces/queues:
+    microsoft: servicebus_queue
+  Microsoft.ServiceBus/namespaces/topics:
+    microsoft: servicebus_topic
+  Microsoft.ServiceBus/namespaces/topics/subscriptions:
+    microsoft: servicebus_subscription
+  Microsoft.Communication/communicationServices:
+    microsoft: communication_service
+  Microsoft.SignalRService/SignalR:
+    microsoft: signalr_service
+  Microsoft.AppConfiguration/configurationStores:
+    microsoft: app_configuration
+  Microsoft.Maps/accounts:
+    microsoft: maps_account
+
+  # ----- Compute + Web ---------------------------------------------------
+  Microsoft.LoadTestService/loadTests:
+    microsoft: load_test
+  Microsoft.Batch/batchAccounts:
+    microsoft: batch_account
+  Microsoft.Maintenance/maintenanceConfigurations:
+    microsoft: maintenance_configuration
+  Microsoft.Web/hostingEnvironments:
+    microsoft: app_service_environment
+  Microsoft.Web/serverFarms:
+    microsoft: app_service_plan
+  Microsoft.Web/sites:
+    microsoft: app_service
+    regex: "^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]$"
+    reason: "resourceDefinition.json is unanchored at the end and allows only lower case at the edges; Azure: 2-60, alphanumerics and hyphens, not starting or ending with a hyphen."
+  Microsoft.Web/sites::function:
+    microsoft: function_app
+  Microsoft.Web/staticSites:
+    microsoft: static_web_app
+  Microsoft.Compute/availabilitySets:
+    microsoft: availability_set
+  Microsoft.Compute/diskEncryptionSets:
+    microsoft: disk_encryption_set
+    regex: "^[a-zA-Z0-9_-]+$"
+    reason: "resourceDefinition.json allows only alphanumerics and underscores. Azure: 1-80, alphanumerics, underscores and hyphens."
+  Microsoft.Compute/galleries:
+    microsoft: shared_image_gallery
+  Microsoft.Compute/disks:
+    microsoft: managed_disk
+    regex: "^[a-zA-Z0-9_-]+$"
+    reason: "resourceDefinition.json allows only alphanumerics and underscores. Azure: 1-80, alphanumerics, underscores and hyphens."
+  Microsoft.Compute/restorePointCollections:
+    microsoft: virtual_machine_restore_point_collection
+  Microsoft.Compute/snapshots:
+    microsoft: snapshots
+  # The 15 characters of virtual_machine are the Windows computer name, not the resource name:
+  # Azure allows 64 for the VM itself. A Windows VM is the `windows` kind.
+  Microsoft.Compute/virtualMachines:
+    microsoft: linux_virtual_machine
+  Microsoft.Compute/virtualMachines::windows:
+    microsoft: windows_virtual_machine
+  Microsoft.Compute/virtualMachineScaleSets:
+    microsoft: linux_virtual_machine_scale_set
+  Microsoft.Compute/virtualMachineScaleSets::windows:
+    microsoft: windows_virtual_machine_scale_set
+  Microsoft.Compute/sshPublicKeys:
+    microsoft: ssh_public_key
+
+  # ----- Containers ------------------------------------------------------
+  Microsoft.ContainerService/managedClusters:
+    microsoft: kubernetes_cluster
+  Microsoft.App/jobs:
+    microsoft: container_app_job
+  Microsoft.App/containerApps:
+    microsoft: container_app
+  Microsoft.App/managedEnvironments:
+    microsoft: container_app_environment
+  Microsoft.ContainerRegistry/registries:
+    microsoft: container_registry
+    min_length: 5
+    max_length: 50
+    scope: global
+    reason: "resourceDefinition.json gives 1-63 in the resource group. Azure: 5-50 alphanumerics, unique across Azure (<name>.azurecr.io)."
+  Microsoft.ContainerInstance/containerGroups:
+    microsoft: container_group
+  Microsoft.ServiceFabric/clusters:
+    microsoft: service_fabric_cluster
+
+  # ----- Databases -------------------------------------------------------
+  Microsoft.Cache/Redis:
+    microsoft: redis_cache
+  Microsoft.DBforPostgreSQL/serverGroupsv2:
+    microsoft: cosmosdb_postgres
+  Microsoft.DBforMySQL/servers:
+    microsoft: mysql_server
+  Microsoft.DBforPostgreSQL/servers:
+    microsoft: postgresql_server
+  Microsoft.Sql/managedInstances:
+    microsoft: mssql_managed_instance
+  Microsoft.Sql/servers:
+    microsoft: mssql_server
+  Microsoft.Sql/servers/databases:
+    microsoft: mssql_database
+  Microsoft.Sql/servers/jobAgents:
+    microsoft: mssql_job_agent
+  Microsoft.Sql/servers/elasticpool:
+    microsoft: mssql_elasticpool
+  Microsoft.Dashboard/grafana:
+    microsoft: dashboard_grafana
+
+  # ----- Management + Governance -----------------------------------------
+  Microsoft.Automation/automationAccounts:
+    microsoft: automation_account
+  Microsoft.AlertsManagement/actionRules:
+    microsoft: monitor_alert_processing_rule_action_group
+  Microsoft.Management/managementGroups:
+    microsoft: management_group
+  Microsoft.Purview/accounts:
+    microsoft: purview_account
+  Microsoft.OperationalInsights/workspaces:
+    microsoft: log_analytics_workspace
+    scope: resourceGroup
+    reason: "resourceDefinition.json gives the scope 'parent'; a workspace is unique in its resource group."
+  Microsoft.OperationalInsights/querypacks:
+    microsoft: log_analytics_query_pack
+  Microsoft.Resources/resourceGroups:
+    microsoft: resource_group
+  Microsoft.Insights/components:
+    microsoft: application_insights
+  Microsoft.Insights/actionGroups:
+    microsoft: monitor_action_group
+  Microsoft.Insights/dataCollectionRules:
+    microsoft: monitor_data_collection_rule
+  Microsoft.Insights/dataCollectionEndpoints:
+    microsoft: monitor_data_collection_endpoint
+  Microsoft.DataMigration/services:
+    microsoft: database_migration_service
+  Microsoft.RecoveryServices/vaults:
+    microsoft: recovery_services_vault
+    scope: resourceGroup
+    reason: "resourceDefinition.json gives the scope 'global'. Azure: unique in its resource group."
+  Microsoft.DataProtection/backupVaults:
+    microsoft: data_protection_backup_vault
+
+  # ----- Networking ------------------------------------------------------
+  Microsoft.Network/applicationGateways:
+    microsoft: application_gateway
+  Microsoft.Network/applicationSecurityGroups:
+    microsoft: application_security_group
+  Microsoft.Cdn/profiles:
+    microsoft: cdn_frontdoor_profile
+    scope: resourceGroup
+    reason: "resourceDefinition.json gives the scope 'global'. Azure: unique in its resource group."
+  Microsoft.Cdn/profiles/afdEndpoints:
+    microsoft: cdn_frontdoor_endpoint
+  Microsoft.Network/frontdoorWebApplicationFirewallPolicies:
+    microsoft: frontdoor_firewall_policy
+    max_length: 128
+    scope: resourceGroup
+    reason: "resourceDefinition.json gives 1-80 and the scope 'global'. Azure: 1-128, unique in its resource group."
+  Microsoft.Network/frontDoors:
+    microsoft: frontdoor
+  Microsoft.Network/ipGroups:
+    microsoft: ip_group
+  Microsoft.Network/connections:
+    microsoft: virtual_network_gateway_connection
+  Microsoft.Network/dnsResolvers:
+    microsoft: dns_private_resolver
+  Microsoft.Network/azureFirewalls:
+    microsoft: firewall
+  Microsoft.Network/firewallPolicies:
+    microsoft: firewall_policy
+  Microsoft.Network/expressRouteCircuits:
+    microsoft: express_route_circuit
+  Microsoft.Network/localNetworkGateways:
+    microsoft: local_network_gateway
+  Microsoft.Network/natGateways:
+    microsoft: nat_gateway
+  Microsoft.Network/networkManagers:
+    microsoft: network_manager
+  Microsoft.Network/virtualNetworkGateways:
+    microsoft: virtual_network_gateway
+  Microsoft.Network/virtualNetworks:
+    microsoft: virtual_network
+  Microsoft.Network/virtualNetworks/virtualNetworkPeerings:
+    microsoft: virtual_network_peering
+  Microsoft.Network/virtualNetworks/subnets:
+    microsoft: subnet
+  Microsoft.Network/virtualWans:
+    microsoft: virtual_wan
+  Microsoft.Network/virtualHubs:
+    microsoft: virtual_hub
+  Microsoft.Network/loadBalancers:
+    microsoft: lb
+  Microsoft.Network/loadBalancers/inboundNatRules:
+    microsoft: lb_nat_rule
+  Microsoft.Network/networkInterfaces:
+    microsoft: network_interface
+  Microsoft.Network/networkSecurityGroups:
+    microsoft: network_security_group
+  Microsoft.Network/networkSecurityGroups/securityRules:
+    microsoft: network_security_rule
+  Microsoft.Network/networkWatchers:
+    microsoft: network_watcher
+  Microsoft.Network/publicIPAddresses:
+    microsoft: public_ip
+  Microsoft.Network/publicIPPrefixes:
+    microsoft: public_ip_prefix
+  Microsoft.Network/routeFilters:
+    microsoft: route_filter
+  Microsoft.Network/routeTables:
+    microsoft: route_table
+  Microsoft.Network/routeTables/routes:
+    microsoft: route
+  Microsoft.Network/serviceEndPointPolicies:
+    microsoft: subnet_service_endpoint_storage_policy
+  Microsoft.Network/trafficManagerProfiles:
+    microsoft: traffic_manager_profile
+  Microsoft.Network/bastionHosts:
+    microsoft: bastion_host
+  Microsoft.Network/vpnGateways:
+    microsoft: vpn_gateway
+  Microsoft.Network/vpnGateways/vpnConnections:
+    microsoft: vpn_gateway_connection
+  Microsoft.Network/vpnGateways/vpnSites:
+    microsoft: vpn_site
+
+  # ----- Security + Identity ---------------------------------------------
+  Microsoft.KeyVault/vaults:
+    microsoft: key_vault
+  Microsoft.ManagedIdentity/userAssignedIdentities:
+    microsoft: user_assigned_identity
+
+  # ----- Storage ---------------------------------------------------------
+  Microsoft.Storage/storageAccounts:
+    microsoft: storage_account
+  Microsoft.Storage/storageAccounts/fileServices/shares:
+    microsoft: storage_share
+
+  # ----- Virtual Desktop -------------------------------------------------
+  Microsoft.DesktopVirtualization/hostPools:
+    microsoft: virtual_desktop_host_pool
+  Microsoft.DesktopVirtualization/applicationGroups:
+    microsoft: virtual_desktop_application_group
+  Microsoft.DesktopVirtualization/workspaces:
+    microsoft: virtual_desktop_workspace
+  Microsoft.DesktopVirtualization/scalingPlans:
+    microsoft: virtual_desktop_scaling_plan

@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/LemurDaniel/terraform-provider-naming/internal/schemaengine"
@@ -35,6 +37,7 @@ type namingProviderModel struct {
 	Naming     types.String `tfsdk:"naming"`
 	Parameters types.Map    `tfsdk:"parameters"`
 	RandomSeed types.String `tfsdk:"random_seed"`
+	Validation types.String `tfsdk:"validation"`
 }
 
 func (p *NamingProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -63,6 +66,11 @@ func (p *NamingProvider) Schema(ctx context.Context, req provider.SchemaRequest,
 				Optional:            true,
 				MarkdownDescription: "Seed for the `<UNIQUE_ID_n>` pattern token. The same seed always resolves to the same id, so names stay stable across plans and applies without any state. Required only if a pattern you use actually contains the token.",
 			},
+			"validation": schema.StringAttribute{
+				Optional:            true,
+				Validators:          []validator.String{stringvalidator.OneOf(schemaengine.ValidationModes...)},
+				MarkdownDescription: "What a rendered name that breaks its resource type's naming rule (length, allowed characters) does: `\"error\"` fails the plan, `\"warn\"` reports a warning, `\"off\"` skips the check. Defaults to `\"error\"`. The rules come from Microsoft's `Azure/naming/azurerm` definitions, corrected where they are wrong, and can be changed under `rules:` in the `naming` file.",
+			},
 		},
 	}
 }
@@ -84,6 +92,7 @@ func (p *NamingProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		"naming":      config.Naming.IsUnknown(),
 		"parameters":  config.Parameters.IsUnknown(),
 		"random_seed": config.RandomSeed.IsUnknown(),
+		"validation":  config.Validation.IsUnknown(),
 	} {
 		if unknown {
 			resp.Diagnostics.AddAttributeError(
@@ -114,6 +123,7 @@ func (p *NamingProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		NamingFile: config.Naming.ValueString(),
 		Parameters: parameters,
 		RandomSeed: config.RandomSeed.ValueString(),
+		Validation: config.Validation.ValueString(),
 	})
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to resolve the naming schema", err.Error())
