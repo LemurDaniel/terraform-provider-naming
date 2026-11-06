@@ -90,6 +90,12 @@ Azure:
     microsoft: eventgrid_domain_topic
   Microsoft.EventGrid/systemTopics:
     microsoft: eventgrid_system_topic
+  Microsoft.EventGrid/topics:
+    microsoft: eventgrid_topic
+    scope: region
+    reason: "resourceDefinition.json gives the scope 'resourceGroup'. Azure: unique in its region."
+  Microsoft.Relay/namespaces:
+    microsoft: relay_namespace
   Microsoft.NotificationHubs/namespaces/notificationHubs:
     microsoft: notification_hub
   Microsoft.NotificationHubs/namespaces:
@@ -194,6 +200,17 @@ Azure:
     microsoft: mysql_server
   Microsoft.DBforPostgreSQL/servers:
     microsoft: postgresql_server
+  Microsoft.DBforPostgreSQL/flexibleServers:
+    microsoft: postgresql_server
+  Microsoft.DBforMySQL/flexibleServers:
+    microsoft: mysql_server
+  Microsoft.DocumentDB/databaseAccounts:
+    microsoft: cosmosdb_account
+    min_length: 3
+    max_length: 44
+    regex: "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+    scope: global
+    reason: "resourceDefinition.json gives 1-63 in the resource group. Azure: 3-44, lowercase letters, numbers and hyphens, unique across Azure."
   Microsoft.Sql/managedInstances:
     microsoft: mssql_managed_instance
   Microsoft.Sql/servers:
@@ -232,6 +249,26 @@ Azure:
     microsoft: monitor_data_collection_rule
   Microsoft.Insights/dataCollectionEndpoints:
     microsoft: monitor_data_collection_endpoint
+  Microsoft.Insights/scheduledQueryRules:
+    microsoft: monitor_scheduled_query_rules_alert
+  Microsoft.Insights/metricAlerts:
+    min_length: 1
+    max_length: 260
+    regex: '^[^`*#&+:<>?@%{}\/]+$'
+    scope: resourceGroup
+    reason: "No resourceDefinition.json entry. Azure: 1-260, none of the characters `*#&+:<>?@%{}, backslash and slash."
+  Microsoft.Insights/activityLogAlerts:
+    min_length: 1
+    max_length: 260
+    regex: '^[^<>*%{}&:\?+/#]+$'
+    scope: resourceGroup
+    reason: "No resourceDefinition.json entry. Azure: 1-260, none of the characters <>*%{}&:?+/# and backslash."
+  Microsoft.Consumption/budgets:
+    min_length: 1
+    max_length: 63
+    regex: "^[a-zA-Z0-9_-]+$"
+    scope: resourceGroup
+    reason: "No resourceDefinition.json entry. Azure: 1-63, alphanumerics, hyphens and underscores, unique in its subscription or resource group."
   Microsoft.DataMigration/services:
     microsoft: database_migration_service
   Microsoft.RecoveryServices/vaults:
@@ -255,8 +292,9 @@ Azure:
   Microsoft.Network/frontdoorWebApplicationFirewallPolicies:
     microsoft: frontdoor_firewall_policy
     max_length: 128
+    regex: "^[a-zA-Z][a-zA-Z0-9]*$"
     scope: resourceGroup
-    reason: "resourceDefinition.json gives 1-80 and the scope 'global'. Azure: 1-128, unique in its resource group."
+    reason: "resourceDefinition.json gives 1-80, hyphens and the scope 'global'. Azure: 1-128, alphanumerics, starting with a letter, unique in its resource group."
   Microsoft.Network/frontDoors:
     microsoft: frontdoor
   Microsoft.Network/ipGroups:
@@ -327,6 +365,10 @@ Azure:
   # ----- Security + Identity ---------------------------------------------
   Microsoft.KeyVault/vaults:
     microsoft: key_vault
+  Microsoft.KeyVault/vaults/keys:
+    microsoft: key_vault_key
+  Microsoft.KeyVault/vaults/secrets:
+    microsoft: key_vault_secret
   Microsoft.ManagedIdentity/userAssignedIdentities:
     microsoft: user_assigned_identity
 
@@ -335,6 +377,10 @@ Azure:
     microsoft: storage_account
   Microsoft.Storage/storageAccounts/fileServices/shares:
     microsoft: storage_share
+  Microsoft.Storage/storageAccounts/blobServices/containers:
+    microsoft: storage_container
+  Microsoft.Storage/storageAccounts/queueServices/queues:
+    microsoft: storage_queue
 
   # ----- Virtual Desktop -------------------------------------------------
   Microsoft.DesktopVirtualization/hostPools:
